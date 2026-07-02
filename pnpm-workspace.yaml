@@ -1,8 +1,8 @@
 packages:
-  - artifacts/*
+  - api-server
+  - linkedgol
   - lib/*
   - lib/integrations/*
-  - scripts
 
 autoInstallPeers: false
 
