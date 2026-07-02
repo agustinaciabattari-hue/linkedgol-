@@ -1,9 +1,8 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "pnpm install && pnpm --filter @workspace/linkedgol build && pnpm --filter @workspace/db run push"
+buildCommand = "pnpm install && pnpm --filter @workspace/linkedgol build"
 
 [deploy]
-startCommand = "pnpm --filter @workspace/api-server start"
+startCommand = "pnpm --filter @workspace/db run push && pnpm --filter @workspace/api-server start"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
-
