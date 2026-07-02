@@ -218,6 +218,20 @@ router.post("/admin/clubs", requireAdmin, async (req, res) => {
 
 // --- Site content (key-value editable content) ---
 
+// GET /site-content — public, used by every page to render editable copy
+// with graceful fallbacks. This was missing from the original export even
+// though the frontend has always called it and the admin editor existed to
+// write to it — without this route, saved content never actually showed up
+// on the live site.
+router.get("/site-content", async (_req, res) => {
+  try {
+    const content = await db.select().from(siteContentTable);
+    res.json(content);
+  } catch (err) {
+    res.status(500).json({ error: "Error al obtener el contenido del sitio" });
+  }
+});
+
 router.put("/admin/site-content", requireAdmin, async (req, res) => {
   try {
     const key = typeof req.body?.key === "string" ? req.body.key.trim() : "";
