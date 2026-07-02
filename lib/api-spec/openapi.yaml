@@ -1,0 +1,1306 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: Linkedgol API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: players
+    description: Player profiles
+  - name: agents
+    description: Agent profiles
+  - name: clubs
+    description: Club profiles
+  - name: opportunities
+    description: Job opportunities
+  - name: admin
+    description: Admin operations
+  - name: auth
+    description: User authentication
+  - name: contact
+    description: Public contact form
+
+paths:
+  /auth/register:
+    post:
+      operationId: authRegister
+      tags: [auth]
+      summary: Register a new user and create their profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "201":
+          description: Registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Email already in use
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: authLogin
+      tags: [auth]
+      summary: Log in with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/me:
+    get:
+      operationId: authMe
+      tags: [auth]
+      summary: Get current user profile (requires Bearer token)
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeResponse"
+        "401":
+          description: Unauthorized
+
+  /auth/profile:
+    patch:
+      operationId: authUpdateProfile
+      tags: [auth]
+      summary: Update own profile (requires Bearer token)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProfileInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeResponse"
+        "401":
+          description: Unauthorized
+
+  /auth/verify-email:
+    get:
+      operationId: authVerifyEmail
+      tags: [auth]
+      summary: Verify a user's email using the token sent by email
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  verified:
+                    type: boolean
+                required: [verified]
+        "400":
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/resend-verification:
+    post:
+      operationId: authResendVerification
+      tags: [auth]
+      summary: Resend the verification email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+              required: [email]
+      responses:
+        "200":
+          description: Sent (if the account exists and isn't verified yet)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sent:
+                    type: boolean
+                required: [sent]
+
+  /auth/forgot-password:
+    post:
+      operationId: authForgotPassword
+      tags: [auth]
+      summary: Request a password reset email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+              required: [email]
+      responses:
+        "200":
+          description: Sent (always returns success to avoid leaking account existence)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sent:
+                    type: boolean
+                required: [sent]
+
+  /auth/reset-password:
+    post:
+      operationId: authResetPassword
+      tags: [auth]
+      summary: Reset password using a token from the forgot-password email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                password:
+                  type: string
+              required: [token, password]
+      responses:
+        "200":
+          description: Password reset
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reset:
+                    type: boolean
+                required: [reset]
+        "400":
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /contact:
+    post:
+      operationId: sendContactMessage
+      tags: [contact]
+      summary: Send a message through the public contact form
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                message:
+                  type: string
+              required: [name, email, message]
+      responses:
+        "200":
+          description: Sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sent:
+                    type: boolean
+                required: [sent]
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /players:
+    get:
+      operationId: listPlayers
+      tags: [players]
+      summary: List all players (public fields only — no email/phone)
+      parameters:
+        - name: position
+          in: query
+          schema:
+            type: string
+        - name: nationality
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: minAge
+          in: query
+          schema:
+            type: number
+        - name: maxAge
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: List of players
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Player"
+
+  /players/{id}/contact:
+    post:
+      operationId: contactPlayer
+      tags: [players]
+      summary: Send a message to a player's private email (requires Bearer token)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+              required: [message]
+      responses:
+        "200":
+          description: Sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sent:
+                    type: boolean
+                required: [sent]
+        "401":
+          description: Unauthorized
+        "404":
+          description: Player not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /players/{id}:
+    get:
+      operationId: getPlayer
+      tags: [players]
+      summary: Get player by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Player found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Player"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/players:
+    get:
+      operationId: adminListPlayers
+      tags: [admin]
+      summary: List all players with full private fields (requires admin token)
+      responses:
+        "200":
+          description: List of players (full detail)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminPlayer"
+
+  /admin/agents:
+    get:
+      operationId: adminListAgents
+      tags: [admin]
+      summary: List all agents with full private fields (requires admin token)
+      responses:
+        "200":
+          description: List of agents (full detail)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Agent"
+
+  /admin/clubs:
+    get:
+      operationId: adminListClubs
+      tags: [admin]
+      summary: List all clubs with full private fields (requires admin token)
+      responses:
+        "200":
+          description: List of clubs (full detail)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Club"
+
+  /admin/login:
+    post:
+      operationId: adminLogin
+      tags: [admin]
+      summary: Verify admin password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+              required: [password]
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                required: [token]
+        "401":
+          description: Invalid password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/players/{id}/verify:
+    patch:
+      operationId: setPlayerVerified
+      tags: [admin]
+      summary: Toggle player verified status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                verified:
+                  type: boolean
+              required: [verified]
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Player"
+
+  /admin/players:
+    post:
+      operationId: adminCreatePlayer
+      tags: [admin]
+      summary: Create a new player as admin (auto-verified)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePlayerInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Player"
+
+  /admin/agents:
+    post:
+      operationId: adminCreateAgent
+      tags: [admin]
+      summary: Create a new agent as admin (auto-verified)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAgentInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Agent"
+
+  /admin/clubs:
+    post:
+      operationId: adminCreateClub
+      tags: [admin]
+      summary: Create a new club as admin (auto-verified)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateClubInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Club"
+
+  /site-content:
+    get:
+      operationId: listSiteContent
+      tags: [site-content]
+      summary: Get all site content key-value pairs
+      responses:
+        "200":
+          description: A list of site content entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SiteContent"
+
+  /admin/site-content:
+    put:
+      operationId: upsertSiteContent
+      tags: [admin]
+      summary: Create or update a site content value by key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [key, value]
+              properties:
+                key:
+                  type: string
+                value:
+                  type: string
+      responses:
+        "200":
+          description: Saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteContent"
+
+  /admin/players/{id}:
+    patch:
+      operationId: updatePlayer
+      tags: [admin]
+      summary: Update a player profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePlayerInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Player"
+    delete:
+      operationId: deletePlayer
+      tags: [admin]
+      summary: Delete a player
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /admin/agents/{id}/verify:
+    patch:
+      operationId: setAgentVerified
+      tags: [admin]
+      summary: Toggle agent verified status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                verified:
+                  type: boolean
+              required: [verified]
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Agent"
+
+  /admin/agents/{id}:
+    patch:
+      operationId: updateAgent
+      tags: [admin]
+      summary: Update an agent profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAgentInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Agent"
+    delete:
+      operationId: deleteAgent
+      tags: [admin]
+      summary: Delete an agent
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /admin/clubs/{id}/verify:
+    patch:
+      operationId: setClubVerified
+      tags: [admin]
+      summary: Toggle club verified status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                verified:
+                  type: boolean
+              required: [verified]
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Club"
+
+  /admin/clubs/{id}:
+    patch:
+      operationId: updateClub
+      tags: [admin]
+      summary: Update a club profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateClubInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Club"
+    delete:
+      operationId: deleteClub
+      tags: [admin]
+      summary: Delete a club
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /opportunities:
+    get:
+      operationId: listOpportunities
+      tags: [opportunities]
+      summary: List all opportunities (public fields only — no contact email)
+      responses:
+        "200":
+          description: List of opportunities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Opportunity"
+    post:
+      operationId: createOpportunity
+      tags: [opportunities]
+      summary: Publish a new opportunity (requires Bearer token, club role only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOpportunityInput"
+      responses:
+        "201":
+          description: Opportunity created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Opportunity"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Only clubs can publish opportunities
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /opportunities/mine:
+    get:
+      operationId: listMyOpportunities
+      tags: [opportunities]
+      summary: List the authenticated club's own opportunities, full detail (requires Bearer token, club role only)
+      responses:
+        "200":
+          description: List of the club's opportunities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminOpportunity"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Only clubs have opportunities of their own
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /opportunities/{id}:
+    delete:
+      operationId: deleteOpportunity
+      tags: [opportunities]
+      summary: Delete one of the authenticated club's own opportunities (requires Bearer token)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          description: Unauthorized
+        "403":
+          description: Not your opportunity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /opportunities/{id}/apply:
+    post:
+      operationId: applyToOpportunity
+      tags: [opportunities]
+      summary: Apply to an opportunity — relays a message to the club (requires Bearer token)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+      responses:
+        "200":
+          description: Sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sent:
+                    type: boolean
+                required: [sent]
+        "401":
+          description: Unauthorized
+        "404":
+          description: Opportunity not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+    Player:
+      type: object
+      description: Public player profile. Email/phone are private and never included — use POST /players/{id}/contact to reach out.
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        position:
+          type: string
+        age:
+          type: integer
+        nationality:
+          type: string
+        status:
+          type: string
+        location:
+          type: string
+        bio:
+          type: string
+        videoUrl:
+          type: string
+        imageUrl:
+          type: string
+        goals:
+          type: integer
+        assists:
+          type: integer
+        matches:
+          type: integer
+        verified:
+          type: boolean
+        createdAt:
+          type: string
+      required: [id, name, position, age, nationality, status]
+
+    AdminPlayer:
+      type: object
+      description: Full player record as seen by admins, including private contact fields.
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        position:
+          type: string
+        age:
+          type: integer
+        nationality:
+          type: string
+        status:
+          type: string
+        location:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        bio:
+          type: string
+        videoUrl:
+          type: string
+        imageUrl:
+          type: string
+        goals:
+          type: integer
+        assists:
+          type: integer
+        matches:
+          type: integer
+        verified:
+          type: boolean
+        createdAt:
+          type: string
+      required: [id, name, position, age, nationality, status]
+      type: object
+      properties:
+        name:
+          type: string
+        position:
+          type: string
+        age:
+          type: integer
+        nationality:
+          type: string
+        status:
+          type: string
+        location:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        bio:
+          type: string
+        videoUrl:
+          type: string
+        imageUrl:
+          type: string
+        goals:
+          type: integer
+        assists:
+          type: integer
+        matches:
+          type: integer
+      required: [name, position, age, nationality, status]
+
+    Agent:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        license:
+          type: string
+        country:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        bio:
+          type: string
+        imageUrl:
+          type: string
+        verified:
+          type: boolean
+        createdAt:
+          type: string
+      required: [id, name, country, email]
+
+    CreateAgentInput:
+      type: object
+      properties:
+        name:
+          type: string
+        license:
+          type: string
+        country:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        bio:
+          type: string
+        imageUrl:
+          type: string
+      required: [name, country, email]
+
+    Club:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        country:
+          type: string
+        category:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: string
+        verified:
+          type: boolean
+        createdAt:
+          type: string
+      required: [id, name, country, email]
+
+    CreateClubInput:
+      type: object
+      properties:
+        name:
+          type: string
+        country:
+          type: string
+        category:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: string
+      required: [name, country, email]
+
+    Opportunity:
+      type: object
+      description: Public opportunity listing. Contact email is private — use POST /opportunities/{id}/apply to reach out.
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        country:
+          type: string
+        clubName:
+          type: string
+        role:
+          type: string
+        createdAt:
+          type: string
+      required: [id, title, country, clubName, role]
+
+    AdminOpportunity:
+      type: object
+      description: Full opportunity record as seen by the owning club, including the contact email they submitted.
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        country:
+          type: string
+        clubName:
+          type: string
+        clubId:
+          type: integer
+        role:
+          type: string
+        email:
+          type: string
+        createdAt:
+          type: string
+      required: [id, title, country, clubName, role]
+
+    CreateOpportunityInput:
+      type: object
+      description: Club/country/email are taken from the authenticated club's own profile server-side, not from this payload.
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        role:
+          type: string
+      required: [title, role]
+
+    SiteContent:
+      type: object
+      properties:
+        id:
+          type: integer
+        key:
+          type: string
+        value:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, key, value]
+
+    UserInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        role:
+          type: string
+        playerId:
+          type: integer
+        agentId:
+          type: integer
+        clubId:
+          type: integer
+        emailVerified:
+          type: boolean
+      required: [id, email, role]
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/UserInfo"
+        profile:
+          type: object
+      required: [token, user]
+
+    MeResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/UserInfo"
+        profile:
+          type: object
+      required: [user]
+
+    RegisterInput:
+      type: object
+      required: [role, email, password, name]
+      properties:
+        role:
+          type: string
+          enum: [player, agent, club]
+        email:
+          type: string
+        password:
+          type: string
+        name:
+          type: string
+        position:
+          type: string
+        age:
+          type: integer
+        nationality:
+          type: string
+        status:
+          type: string
+        location:
+          type: string
+        phone:
+          type: string
+        bio:
+          type: string
+        videoUrl:
+          type: string
+        imageUrl:
+          type: string
+        goals:
+          type: integer
+        assists:
+          type: integer
+        matches:
+          type: integer
+        license:
+          type: string
+        country:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+
+    UpdateProfileInput:
+      type: object
+      properties:
+        name:
+          type: string
+        position:
+          type: string
+        age:
+          type: integer
+        nationality:
+          type: string
+        status:
+          type: string
+        location:
+          type: string
+        phone:
+          type: string
+        bio:
+          type: string
+        videoUrl:
+          type: string
+        imageUrl:
+          type: string
+        goals:
+          type: integer
+        assists:
+          type: integer
+        matches:
+          type: integer
+        license:
+          type: string
+        country:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        email:
+          type: string
