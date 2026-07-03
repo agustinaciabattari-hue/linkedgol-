@@ -7,12 +7,14 @@ import { Trophy, Loader2 } from "lucide-react";
 import { Button, Card, Input, Label, Select, Textarea } from "@/components/ui/shared";
 import { useAuthRegister } from "@workspace/api-client-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const formSchema = z.object({
   name: z.string().min(2, "El nombre es obligatorio"),
   position: z.string().min(1, "Selecciona una posición"),
   age: z.coerce.number().min(15).max(45),
   nationality: z.string().min(2, "La nacionalidad es obligatoria"),
+  otherCitizenships: z.string().optional(),
   status: z.enum(["Libre", "Contratado"]),
   email: z.string().email("Email inválido"),
   password: z.string().min(6, "Mínimo 6 caracteres"),
@@ -36,6 +38,7 @@ type FormData = z.infer<typeof formSchema>;
 export default function RegistroJugador() {
   const [, setLocation] = useLocation();
   const { login } = useAuth();
+  const { t } = useLanguage();
   const [errorMsg, setErrorMsg] = useState("");
   const { mutate, isPending } = useAuthRegister();
 
@@ -57,9 +60,9 @@ export default function RegistroJugador() {
       },
       onError: (err: any) => {
         if (err?.response?.status === 409 || err?.status === 409 || err?.message?.includes("409")) {
-          setErrorMsg("Ya existe una cuenta con ese email.");
+          setErrorMsg(t("registro.duplicateEmail"));
         } else {
-          setErrorMsg("Ocurrió un error al crear la cuenta.");
+          setErrorMsg(t("registro.genericError"));
         }
       }
     });
@@ -73,8 +76,8 @@ export default function RegistroJugador() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-orange-100 text-orange-600 mb-4 shadow-sm">
             <Trophy className="w-8 h-8" />
           </div>
-          <h1 className="text-4xl font-display font-bold text-slate-900 mb-3">Creá tu perfil de Jugador</h1>
-          <p className="text-lg text-slate-600">Completá tus datos para que los clubes puedan encontrarte y contactarte.</p>
+          <h1 className="text-4xl font-display font-bold text-slate-900 mb-3">{t("registro.playerTitle")}</h1>
+          <p className="text-lg text-slate-600">{t("registro.playerSubtitle")}</p>
         </div>
 
         <Card className="p-6 sm:p-8 shadow-xl border-orange-100/50">
@@ -82,21 +85,21 @@ export default function RegistroJugador() {
             
             {/* Cuenta */}
             <div>
-              <h3 className="text-xl font-bold text-slate-900 border-b pb-2 mb-6">Datos de Cuenta</h3>
+              <h3 className="text-xl font-bold text-slate-900 border-b pb-2 mb-6">{t("registro.accountData")}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2 md:col-span-2">
-                  <Label>Email * (Será tu usuario de acceso)</Label>
+                  <Label>{t("registro.emailLabel")}</Label>
                   <Input type="email" {...register("email")} placeholder="tu@email.com" className={errors.email ? "border-red-500 focus-visible:ring-red-500" : ""} />
                   {errors.email && <p className="text-red-500 text-xs">{errors.email.message}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label>Contraseña *</Label>
-                  <Input type="password" {...register("password")} placeholder="Mínimo 6 caracteres" className={errors.password ? "border-red-500 focus-visible:ring-red-500" : ""} />
+                  <Label>{t("registro.password")}</Label>
+                  <Input type="password" {...register("password")} placeholder={t("registro.passwordPlaceholder")} className={errors.password ? "border-red-500 focus-visible:ring-red-500" : ""} />
                   {errors.password && <p className="text-red-500 text-xs">{errors.password.message}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label>Confirmar contraseña *</Label>
-                  <Input type="password" {...register("confirmPassword")} placeholder="Repetir contraseña" className={errors.confirmPassword ? "border-red-500 focus-visible:ring-red-500" : ""} />
+                  <Label>{t("registro.confirmPassword")}</Label>
+                  <Input type="password" {...register("confirmPassword")} placeholder={t("registro.confirmPasswordPlaceholder")} className={errors.confirmPassword ? "border-red-500 focus-visible:ring-red-500" : ""} />
                   {errors.confirmPassword && <p className="text-red-500 text-xs">{errors.confirmPassword.message}</p>}
                 </div>
               </div>
@@ -104,68 +107,73 @@ export default function RegistroJugador() {
 
             {/* Información Personal */}
             <div>
-              <h3 className="text-xl font-bold text-slate-900 border-b pb-2 mb-6">Información Personal</h3>
+              <h3 className="text-xl font-bold text-slate-900 border-b pb-2 mb-6">{t("registro.personalInfo")}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label>Nombre completo *</Label>
-                  <Input {...register("name")} placeholder="Ej. Lionel Messi" className={errors.name ? "border-red-500 focus-visible:ring-red-500" : ""} />
+                  <Label>{t("registro.fullName")}</Label>
+                  <Input {...register("name")} placeholder={t("registro.namePlaceholder")} className={errors.name ? "border-red-500 focus-visible:ring-red-500" : ""} />
                   {errors.name && <p className="text-red-500 text-xs">{errors.name.message}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label>Nacionalidad *</Label>
-                  <Input {...register("nationality")} placeholder="Ej. Argentina" className={errors.nationality ? "border-red-500 focus-visible:ring-red-500" : ""} />
+                  <Label>{t("registro.nationality")}</Label>
+                  <Input {...register("nationality")} placeholder={t("registro.nationalityPlaceholder")} className={errors.nationality ? "border-red-500 focus-visible:ring-red-500" : ""} />
                   {errors.nationality && <p className="text-red-500 text-xs">{errors.nationality.message}</p>}
                 </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>{t("registro.otherCitizenships")}</Label>
+                  <Input {...register("otherCitizenships")} placeholder={t("registro.otherCitizenshipsPlaceholder")} />
+                  <p className="text-xs text-slate-400">{t("registro.otherCitizenshipsHelp")}</p>
+                </div>
                 <div className="space-y-2">
-                  <Label>Edad *</Label>
-                  <Input type="number" {...register("age")} placeholder="Ej. 24" className={errors.age ? "border-red-500 focus-visible:ring-red-500" : ""} />
+                  <Label>{t("registro.age")}</Label>
+                  <Input type="number" {...register("age")} placeholder={t("registro.agePlaceholder")} className={errors.age ? "border-red-500 focus-visible:ring-red-500" : ""} />
                   {errors.age && <p className="text-red-500 text-xs">{errors.age.message}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label>Ubicación actual</Label>
-                  <Input {...register("location")} placeholder="Ej. Buenos Aires" />
+                  <Label>{t("registro.currentLocation")}</Label>
+                  <Input {...register("location")} placeholder={t("registro.locationPlaceholder")} />
                 </div>
               </div>
             </div>
 
             {/* Perfil Deportivo */}
             <div>
-              <h3 className="text-xl font-bold text-slate-900 border-b pb-2 mb-6">Perfil Deportivo</h3>
+              <h3 className="text-xl font-bold text-slate-900 border-b pb-2 mb-6">{t("registro.sportsProfile")}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label>Posición principal *</Label>
+                  <Label>{t("registro.mainPosition")}</Label>
                   <Select {...register("position")} className={errors.position ? "border-red-500 focus-visible:ring-red-500" : ""}>
-                    <option value="">Seleccionar posición</option>
-                    <option value="Arquero">Arquero</option>
-                    <option value="Defensor">Defensor Central</option>
-                    <option value="Lateral">Lateral</option>
-                    <option value="Mediocampista">Mediocampista</option>
-                    <option value="Volante">Volante Ofensivo</option>
-                    <option value="Extremo">Extremo</option>
-                    <option value="Delantero">Delantero Centro</option>
+                    <option value="">{t("registro.selectPosition")}</option>
+                    <option value="Arquero">{t("profiles.goalkeeper")}</option>
+                    <option value="Defensor">{t("profiles.centerBack")}</option>
+                    <option value="Lateral">{t("profiles.fullback")}</option>
+                    <option value="Mediocampista">{t("profiles.midfielder")}</option>
+                    <option value="Volante">{t("profiles.attackingMid")}</option>
+                    <option value="Extremo">{t("profiles.winger")}</option>
+                    <option value="Delantero">{t("profiles.striker")}</option>
                   </Select>
                   {errors.position && <p className="text-red-500 text-xs">{errors.position.message}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label>Estado contractual *</Label>
+                  <Label>{t("registro.contractStatus")}</Label>
                   <Select {...register("status")}>
-                    <option value="Libre">Jugador Libre</option>
-                    <option value="Contratado">Con contrato vigente</option>
+                    <option value="Libre">{t("registro.freeAgentOption")}</option>
+                    <option value="Contratado">{t("registro.underContract")}</option>
                   </Select>
                 </div>
                 
                 {/* Stats */}
                 <div className="col-span-full grid grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
                   <div className="space-y-2">
-                    <Label>Partidos</Label>
+                    <Label>{t("registro.matches")}</Label>
                     <Input type="number" {...register("matches")} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Goles</Label>
+                    <Label>{t("registro.goals")}</Label>
                     <Input type="number" {...register("goals")} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Asistencias</Label>
+                    <Label>{t("registro.assists")}</Label>
                     <Input type="number" {...register("assists")} />
                   </div>
                 </div>
@@ -174,24 +182,24 @@ export default function RegistroJugador() {
 
             {/* Multimedia y Contacto */}
             <div>
-              <h3 className="text-xl font-bold text-slate-900 border-b pb-2 mb-6">Multimedia y Contacto</h3>
+              <h3 className="text-xl font-bold text-slate-900 border-b pb-2 mb-6">{t("registro.mediaContact")}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div className="space-y-2">
-                  <Label>Teléfono / WhatsApp</Label>
+                  <Label>{t("registro.phone")}</Label>
                   <Input {...register("phone")} placeholder="+54 9 11..." />
                 </div>
                 <div className="space-y-2">
-                  <Label>Link de Video (Highlights)</Label>
+                  <Label>{t("registro.videoLink")}</Label>
                   <Input {...register("videoUrl")} placeholder="https://youtube.com/watch?v=..." />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <Label>Link de Foto de Perfil</Label>
+                  <Label>{t("registro.photoLink")}</Label>
                   <Input {...register("imageUrl")} placeholder="https://..." />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Biografía / Descripción</Label>
-                <Textarea {...register("bio")} placeholder="Contale a los clubes sobre tu estilo de juego, tu pierna hábil, características..." />
+                <Label>{t("registro.bio")}</Label>
+                <Textarea {...register("bio")} placeholder={t("registro.bioPlaceholder")} />
               </div>
             </div>
 
@@ -205,8 +213,8 @@ export default function RegistroJugador() {
               <label className="flex items-start gap-3 text-sm text-slate-600 cursor-pointer">
                 <input type="checkbox" {...register("agreeToTerms")} className="mt-1 w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" />
                 <span>
-                  Acepto los <Link href="/terminos" className="text-primary font-medium hover:underline" target="_blank">Términos y Condiciones</Link> y la{" "}
-                  <Link href="/privacidad" className="text-primary font-medium hover:underline" target="_blank">Política de Privacidad</Link> de Linkedgol.
+                  {t("registro.agreeTermsPrefix")} <Link href="/terminos" className="text-primary font-medium hover:underline" target="_blank">{t("registro.termsLink")}</Link> {t("registro.agreeTermsAnd")}{" "}
+                  <Link href="/privacidad" className="text-primary font-medium hover:underline" target="_blank">{t("registro.privacyLink")}</Link> {t("registro.ofLinkedgol")}
                 </span>
               </label>
               {errors.agreeToTerms && <p className="text-red-500 text-xs">{errors.agreeToTerms.message}</p>}
@@ -215,11 +223,11 @@ export default function RegistroJugador() {
             <div className="pt-6 border-t flex flex-col items-center gap-4">
               <Button type="submit" variant="orange" size="lg" className="w-full" disabled={isPending}>
                 {isPending ? (
-                  <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Creando cuenta...</>
-                ) : "Crear mi cuenta"}
+                  <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> {t("registro.creatingAccount")}</>
+                ) : t("registro.createAccount")}
               </Button>
               <p className="text-sm text-slate-500">
-                ¿Ya tenés cuenta? <Link href="/ingresar" className="text-primary font-semibold hover:underline">Iniciá sesión</Link>
+                {t("registro.alreadyHaveAccount")} <Link href="/ingresar" className="text-primary font-semibold hover:underline">{t("registro.loginLink")}</Link>
               </p>
             </div>
           </form>

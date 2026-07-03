@@ -7,6 +7,7 @@ import { ShieldHalf, Loader2 } from "lucide-react";
 import { Button, Card, Input, Label, Textarea } from "@/components/ui/shared";
 import { useAuthRegister } from "@workspace/api-client-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const formSchema = z.object({
   name: z.string().min(2, "El nombre del club es obligatorio"),
@@ -29,6 +30,7 @@ type FormData = z.infer<typeof formSchema>;
 export default function RegistroClub() {
   const [, setLocation] = useLocation();
   const { login } = useAuth();
+  const { t } = useLanguage();
   const [errorMsg, setErrorMsg] = useState("");
   const { mutate, isPending } = useAuthRegister();
 
@@ -49,9 +51,9 @@ export default function RegistroClub() {
       },
       onError: (err: any) => {
         if (err?.response?.status === 409 || err?.status === 409 || err?.message?.includes("409")) {
-          setErrorMsg("Ya existe una cuenta con ese email.");
+          setErrorMsg(t("registro.duplicateEmail"));
         } else {
-          setErrorMsg("Ocurrió un error al crear la cuenta.");
+          setErrorMsg(t("registro.genericError"));
         }
       }
     });
@@ -65,8 +67,8 @@ export default function RegistroClub() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-green-100 text-green-700 mb-4 shadow-sm">
             <ShieldHalf className="w-8 h-8" />
           </div>
-          <h1 className="text-4xl font-display font-bold text-slate-900 mb-3">Registrá tu Club</h1>
-          <p className="text-lg text-slate-600">Accedé a la mayor red de jugadores libres y agentes para armar tu plantel.</p>
+          <h1 className="text-4xl font-display font-bold text-slate-900 mb-3">{t("registro.clubPageTitle")}</h1>
+          <p className="text-lg text-slate-600">{t("registro.clubPageSubtitle")}</p>
         </div>
 
         <Card className="p-6 sm:p-8 shadow-xl border-green-100/50">
@@ -74,21 +76,21 @@ export default function RegistroClub() {
             
             {/* Cuenta */}
             <div>
-              <h3 className="text-xl font-bold text-slate-900 border-b pb-2 mb-6">Datos de Cuenta</h3>
+              <h3 className="text-xl font-bold text-slate-900 border-b pb-2 mb-6">{t("registro.accountData")}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2 md:col-span-2">
-                  <Label>Email institucional *</Label>
+                  <Label>{t("registro.institutionalEmail")}</Label>
                   <Input type="email" {...register("email")} placeholder="secretaria@club.com" className={errors.email ? "border-red-500 focus-visible:ring-red-500" : ""} />
                   {errors.email && <p className="text-red-500 text-xs">{errors.email.message}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label>Contraseña *</Label>
-                  <Input type="password" {...register("password")} placeholder="Mínimo 6 caracteres" className={errors.password ? "border-red-500 focus-visible:ring-red-500" : ""} />
+                  <Label>{t("registro.password")}</Label>
+                  <Input type="password" {...register("password")} placeholder={t("registro.passwordPlaceholder")} className={errors.password ? "border-red-500 focus-visible:ring-red-500" : ""} />
                   {errors.password && <p className="text-red-500 text-xs">{errors.password.message}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label>Confirmar contraseña *</Label>
-                  <Input type="password" {...register("confirmPassword")} placeholder="Repetir contraseña" className={errors.confirmPassword ? "border-red-500 focus-visible:ring-red-500" : ""} />
+                  <Label>{t("registro.confirmPassword")}</Label>
+                  <Input type="password" {...register("confirmPassword")} placeholder={t("registro.confirmPasswordPlaceholder")} className={errors.confirmPassword ? "border-red-500 focus-visible:ring-red-500" : ""} />
                   {errors.confirmPassword && <p className="text-red-500 text-xs">{errors.confirmPassword.message}</p>}
                 </div>
               </div>
@@ -96,41 +98,41 @@ export default function RegistroClub() {
 
             {/* Información Institucional */}
             <div>
-              <h3 className="text-xl font-bold text-slate-900 border-b pb-2 mb-6">Información Institucional</h3>
+              <h3 className="text-xl font-bold text-slate-900 border-b pb-2 mb-6">{t("registro.institutionalInfo")}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label>Nombre de la institución *</Label>
-                  <Input {...register("name")} placeholder="Ej. Club Atlético..." className={errors.name ? "border-red-500 focus-visible:ring-red-500" : ""} />
+                  <Label>{t("registro.institutionName")}</Label>
+                  <Input {...register("name")} placeholder={t("registro.institutionNamePlaceholder")} className={errors.name ? "border-red-500 focus-visible:ring-red-500" : ""} />
                   {errors.name && <p className="text-red-500 text-xs">{errors.name.message}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label>País *</Label>
-                  <Input {...register("country")} placeholder="Ej. México" className={errors.country ? "border-red-500 focus-visible:ring-red-500" : ""} />
+                  <Label>{t("registro.countryLabel")}</Label>
+                  <Input {...register("country")} placeholder={t("registro.countryPlaceholder")} className={errors.country ? "border-red-500 focus-visible:ring-red-500" : ""} />
                   {errors.country && <p className="text-red-500 text-xs">{errors.country.message}</p>}
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <Label>Categoría / Liga</Label>
-                  <Input {...register("category")} placeholder="Ej. Primera División, Segunda B..." />
+                  <Label>{t("registro.categoryLeague")}</Label>
+                  <Input {...register("category")} placeholder={t("registro.categoryLeaguePlaceholder")} />
                 </div>
               </div>
             </div>
 
             {/* Contacto Oficial */}
             <div>
-              <h3 className="text-xl font-bold text-slate-900 border-b pb-2 mb-6">Contacto Oficial</h3>
+              <h3 className="text-xl font-bold text-slate-900 border-b pb-2 mb-6">{t("registro.officialContact")}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div className="space-y-2">
-                  <Label>Teléfono de la secretaría técnica</Label>
+                  <Label>{t("registro.techSecretaryPhone")}</Label>
                   <Input {...register("phone")} placeholder="+..." />
                 </div>
                 <div className="space-y-2">
-                  <Label>Escudo del club (Link de imagen)</Label>
+                  <Label>{t("registro.clubCrest")}</Label>
                   <Input {...register("imageUrl")} placeholder="https://..." />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Breve descripción de la institución o proyecto</Label>
-                <Textarea {...register("description")} placeholder="Buscamos ascender este año, proyecto con jóvenes..." />
+                <Label>{t("registro.institutionDescription")}</Label>
+                <Textarea {...register("description")} placeholder={t("registro.institutionDescriptionPlaceholder")} />
               </div>
             </div>
 
@@ -144,8 +146,8 @@ export default function RegistroClub() {
               <label className="flex items-start gap-3 text-sm text-slate-600 cursor-pointer">
                 <input type="checkbox" {...register("agreeToTerms")} className="mt-1 w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" />
                 <span>
-                  Acepto los <Link href="/terminos" className="text-primary font-medium hover:underline" target="_blank">Términos y Condiciones</Link> y la{" "}
-                  <Link href="/privacidad" className="text-primary font-medium hover:underline" target="_blank">Política de Privacidad</Link> de Linkedgol.
+                  {t("registro.agreeTermsPrefix")} <Link href="/terminos" className="text-primary font-medium hover:underline" target="_blank">{t("registro.termsLink")}</Link> {t("registro.agreeTermsAnd")}{" "}
+                  <Link href="/privacidad" className="text-primary font-medium hover:underline" target="_blank">{t("registro.privacyLink")}</Link> {t("registro.ofLinkedgol")}
                 </span>
               </label>
               {errors.agreeToTerms && <p className="text-red-500 text-xs">{errors.agreeToTerms.message}</p>}
@@ -154,11 +156,11 @@ export default function RegistroClub() {
             <div className="pt-6 border-t flex flex-col items-center gap-4">
               <Button type="submit" variant="green" size="lg" className="w-full" disabled={isPending}>
                 {isPending ? (
-                  <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Registrando Club...</>
-                ) : "Finalizar Registro"}
+                  <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> {t("registro.registeringClub")}</>
+                ) : t("registro.finishRegistration")}
               </Button>
               <p className="text-sm text-slate-500">
-                ¿Ya tenés cuenta? <Link href="/ingresar" className="text-primary font-semibold hover:underline">Iniciá sesión</Link>
+                {t("registro.alreadyHaveAccount")} <Link href="/ingresar" className="text-primary font-semibold hover:underline">{t("registro.loginLink")}</Link>
               </p>
             </div>
           </form>
