@@ -7,6 +7,7 @@ import authRouter from "./auth";
 import contactRouter from "./contact";
 import statsRouter from "./stats";
 import translateRouter from "./translate";
+import sitemapRouter from "./sitemap";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(adminRouter);
 router.use(contactRouter);
 router.use(statsRouter);
 router.use(translateRouter);
+router.use(sitemapRouter);
 
 export default router;
