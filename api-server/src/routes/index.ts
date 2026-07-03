@@ -5,6 +5,7 @@ import opportunitiesRouter from "./opportunities";
 import adminRouter from "./admin";
 import authRouter from "./auth";
 import contactRouter from "./contact";
+import statsRouter from "./stats";
 
 const router: IRouter = Router();
 
@@ -14,5 +15,6 @@ router.use(playersRouter);
 router.use(opportunitiesRouter);
 router.use(adminRouter);
 router.use(contactRouter);
+router.use(statsRouter);
 
 export default router;
