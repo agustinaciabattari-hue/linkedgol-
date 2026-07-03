@@ -36,6 +36,7 @@ const playerSchema = z.object({
   position: z.string().min(1, "La posición es requerida"),
   age: z.coerce.number().min(1, "La edad es requerida"),
   nationality: z.string().min(1, "La nacionalidad es requerida"),
+  otherCitizenships: z.string().optional().or(z.literal("")),
   status: z.string().min(1, "El estado es requerido"),
   location: z.string().optional().or(z.literal("")),
   email: z.string().email("Email inválido").optional().or(z.literal("")),
@@ -206,7 +207,7 @@ export default function AdminDashboard() {
     
     if (type === "jugador") {
       playerForm.reset({
-        name: "", position: "Delantero", age: 18, nationality: "", status: "Libre", location: "",
+        name: "", position: "Delantero", age: 18, nationality: "", otherCitizenships: "", status: "Libre", location: "",
         email: "", phone: "", bio: "", videoUrl: "", imageUrl: "", goals: 0, assists: 0, matches: 0,
       });
     } else if (type === "agente") {
@@ -225,6 +226,7 @@ export default function AdminDashboard() {
       const p = editingEntity.data as AdminPlayer;
       playerForm.reset({
         name: p.name || "", position: p.position || "", age: p.age || 18, nationality: p.nationality || "",
+        otherCitizenships: p.otherCitizenships || "",
         status: p.status || "Libre", location: p.location || "", email: p.email || "", phone: p.phone || "",
         bio: p.bio || "", videoUrl: p.videoUrl || "", imageUrl: p.imageUrl || "", goals: p.goals || 0,
         assists: p.assists || 0, matches: p.matches || 0,
@@ -669,6 +671,19 @@ export default function AdminDashboard() {
                                   onChange={(e) => setContentValues(prev => ({...prev, [field.key]: e.target.value}))}
                                   className="max-w-2xl h-24"
                                 />
+                              ) : field.type === "toggle" ? (
+                                <label className="flex items-center gap-3 cursor-pointer w-fit">
+                                  <button
+                                    type="button"
+                                    role="switch"
+                                    aria-checked={currentVal === "true"}
+                                    onClick={() => setContentValues(prev => ({...prev, [field.key]: currentVal === "true" ? "false" : "true"}))}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0 ${currentVal === "true" ? "bg-primary" : "bg-slate-300"}`}
+                                  >
+                                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${currentVal === "true" ? "translate-x-6" : "translate-x-1"}`} />
+                                  </button>
+                                  <span className="text-sm text-slate-600">{currentVal === "true" ? "Visible en el sitio" : "Oculto en el sitio"}</span>
+                                </label>
                               ) : field.type === "image" ? (
                                 <div className="flex items-start gap-4">
                                   <div className="w-16 h-16 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
@@ -772,6 +787,11 @@ export default function AdminDashboard() {
                       <Label>Nacionalidad <span className="text-red-500">*</span></Label>
                       <Input {...playerForm.register("nationality")} placeholder="Ej. Argentino" />
                       {playerForm.formState.errors.nationality && <p className="text-xs text-red-500">{playerForm.formState.errors.nationality.message as string}</p>}
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label>Otras ciudadanías</Label>
+                      <Input {...playerForm.register("otherCitizenships")} placeholder="Ej. Italia, España" />
                     </div>
 
                     <div className="space-y-1.5">
