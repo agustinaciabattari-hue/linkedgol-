@@ -2,19 +2,18 @@ import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowRight, Users, Briefcase, ShieldCheck, MapPin, CheckCircle2 } from "lucide-react";
 import { Button, Card, Badge } from "@/components/ui/shared";
-import { useListPlayers, useListOpportunities, useListSiteContent } from "@workspace/api-client-react";
-import { MOCK_PLAYERS } from "@/lib/mock";
+import { useListPlayers, useListOpportunities, useListSiteContent, useGetStats } from "@workspace/api-client-react";
 import { getContentValue } from "@/lib/site-content";
 
 export default function Home() {
   const { data: dbPlayers, isLoading: loadingPlayers } = useListPlayers();
   const { data: opportunities, isLoading: loadingOpps } = useListOpportunities();
   const { data: content } = useListSiteContent();
+  const { data: stats } = useGetStats();
 
   const c = (key: string, fallback: string) => getContentValue(content, key, fallback);
 
-  // Use DB players if available, otherwise fallback to mock data
-  const players = dbPlayers && dbPlayers.length > 0 ? dbPlayers : MOCK_PLAYERS;
+  const players = dbPlayers || [];
   const featuredPlayers = players.slice(0, 4);
   const activeOpps = opportunities?.slice(0, 3) || [];
 
@@ -63,15 +62,15 @@ export default function Home() {
             {/* Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10">
               <div className="text-center">
-                <div className="text-3xl font-display font-bold text-white">{c("home_stats_players", "1,200+")}</div>
+                <div className="text-3xl font-display font-bold text-white">{stats?.players ?? "–"}</div>
                 <div className="text-sm text-slate-400 font-medium">Jugadores</div>
               </div>
               <div className="text-center border-y sm:border-y-0 sm:border-x border-white/10 py-4 sm:py-0">
-                <div className="text-3xl font-display font-bold text-white">{c("home_stats_agents", "150+")}</div>
+                <div className="text-3xl font-display font-bold text-white">{stats?.agents ?? "–"}</div>
                 <div className="text-sm text-slate-400 font-medium">Agentes FIFA</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-display font-bold text-white">{c("home_stats_clubs", "80+")}</div>
+                <div className="text-3xl font-display font-bold text-white">{stats?.clubs ?? "–"}</div>
                 <div className="text-sm text-slate-400 font-medium">Clubes Activos</div>
               </div>
             </div>
@@ -98,7 +97,7 @@ export default function Home() {
                 <div key={i} className="h-80 bg-slate-200 animate-pulse rounded-2xl"></div>
               ))}
             </div>
-          ) : (
+          ) : featuredPlayers.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {featuredPlayers.map((player, idx) => (
                 <motion.div
@@ -144,6 +143,13 @@ export default function Home() {
                   </Card>
                 </motion.div>
               ))}
+            </div>
+          ) : (
+            <div className="col-span-full py-12 text-center border-2 border-dashed border-slate-200 rounded-2xl">
+              <p className="text-muted-foreground mb-4">Todavía no hay jugadores registrados. ¡Sé el primero!</p>
+              <Link href="/registro/jugador">
+                <Button variant="outline">Crear mi perfil de jugador</Button>
+              </Link>
             </div>
           )}
         </div>
