@@ -1,9 +1,10 @@
 import { Link, useLocation } from "wouter";
-import { Menu, X, User as UserIcon, LogOut } from "lucide-react";
+import { Menu, X, User as UserIcon, LogOut, Globe } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/shared";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function Navbar() {
   const [location] = useLocation();
@@ -11,6 +12,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   
   const { isLoggedIn, isLoading, user, profile, logout } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -19,17 +21,19 @@ export function Navbar() {
   }, []);
 
   const navLinks = [
-    { name: "Inicio", path: "/" },
-    { name: "Jugadores", path: "/jugador" },
-    { name: "Agentes", path: "/agente" },
-    { name: "Clubes", path: "/club" },
-    { name: "Oportunidades", path: "/oportunidades" },
+    { name: t("nav.home"), path: "/" },
+    { name: t("nav.players"), path: "/jugador" },
+    { name: t("nav.agents"), path: "/agente" },
+    { name: t("nav.clubs"), path: "/club" },
+    { name: t("nav.opportunities"), path: "/oportunidades" },
   ];
 
   const handleLogout = () => {
     logout();
     setIsOpen(false);
   };
+
+  const toggleLanguage = () => setLanguage(language === "es" ? "en" : "es");
 
   const displayName = profile?.name || user?.email?.split('@')[0] || "Usuario";
   const truncatedName = displayName.length > 16 ? displayName.substring(0, 14) + "..." : displayName;
@@ -66,8 +70,17 @@ export function Navbar() {
 
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center gap-4">
+          <button
+            onClick={toggleLanguage}
+            className="flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-primary transition-colors px-2 py-1 rounded-lg hover:bg-slate-50"
+            title={language === "es" ? "Switch to English" : "Cambiar a Español"}
+          >
+            <Globe className="w-4 h-4" />
+            {language === "es" ? "EN" : "ES"}
+          </button>
+
           <Link href="/perfiles" className="text-sm font-semibold text-muted-foreground hover:text-primary transition-colors mr-2">
-            Ver Perfiles
+            {t("nav.viewProfiles")}
           </Link>
           
           {isLoading ? (
@@ -80,13 +93,13 @@ export function Navbar() {
                   <span className="truncate max-w-[120px]">{truncatedName}</span>
                 </Button>
               </Link>
-              <Button variant="ghost" size="sm" onClick={handleLogout} className="px-2 text-slate-500 hover:text-red-600 hover:bg-red-50" title="Cerrar sesión">
+              <Button variant="ghost" size="sm" onClick={handleLogout} className="px-2 text-slate-500 hover:text-red-600 hover:bg-red-50" title={t("nav.logout")}>
                 <LogOut className="w-4 h-4" />
               </Button>
             </div>
           ) : (
             <Link href="/ingresar">
-              <Button size="sm">Ingresar</Button>
+              <Button size="sm">{t("nav.login")}</Button>
             </Link>
           )}
         </div>
@@ -100,7 +113,15 @@ export function Navbar() {
       {/* Mobile Nav */}
       {isOpen && (
         <div className="md:hidden absolute top-full left-0 w-full bg-white border-b border-border shadow-xl py-4 px-4 flex flex-col gap-4">
-          
+
+          <button
+            onClick={toggleLanguage}
+            className="flex items-center justify-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-primary transition-colors px-3 py-2 rounded-lg border border-border w-fit self-end"
+          >
+            <Globe className="w-4 h-4" />
+            {language === "es" ? "English" : "Español"}
+          </button>
+
           {/* Mobile Auth Area */}
           {!isLoading && (
             <div className="bg-slate-50 p-4 rounded-xl mb-2 flex flex-col gap-3">
@@ -116,15 +137,14 @@ export function Navbar() {
                     </div>
                   </div>
                   <Link href="/mi-perfil" onClick={() => setIsOpen(false)}>
-                    <Button variant="outline" className="w-full justify-center">Mi Cuenta</Button>
+                    <Button variant="outline" className="w-full justify-center">{t("nav.myProfile")}</Button>
                   </Link>
-                  <Button variant="ghost" onClick={handleLogout} className="w-full justify-center text-red-600 bg-red-50 hover:bg-red-100">Cerrar Sesión</Button>
+                  <Button variant="ghost" onClick={handleLogout} className="w-full justify-center text-red-600 bg-red-50 hover:bg-red-100">{t("nav.logout")}</Button>
                 </>
               ) : (
                 <div className="flex flex-col gap-2">
-                  <p className="text-sm text-center text-slate-500 font-medium mb-1">Accedé a tu perfil profesional</p>
                   <Link href="/ingresar" onClick={() => setIsOpen(false)}>
-                    <Button className="w-full justify-center shadow-md shadow-primary/20">Ingresar a mi cuenta</Button>
+                    <Button className="w-full justify-center shadow-md shadow-primary/20">{t("nav.login")}</Button>
                   </Link>
                 </div>
               )}
@@ -148,7 +168,7 @@ export function Navbar() {
           ))}
           <Link href="/perfiles" onClick={() => setIsOpen(false)}>
             <div className="text-base font-semibold px-4 py-2 rounded-lg text-muted-foreground hover:bg-slate-50 mt-2">
-              Ver Perfiles y Mercado
+              {t("nav.viewProfiles")}
             </div>
           </Link>
         </div>
