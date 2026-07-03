@@ -6,6 +6,7 @@ import * as z from "zod";
 import { LogOut, User, Building2, Briefcase, Loader2, Save, MailWarning, Plus, Trash2, X } from "lucide-react";
 import { Button, Card, Input, Label, Select, Textarea, Badge } from "@/components/ui/shared";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   useAuthUpdateProfile, useAuthResendVerification,
   useListMyOpportunities, useCreateOpportunity, useDeleteOpportunity,
@@ -59,6 +60,7 @@ const clubSchema = z.object({
 export default function MiPerfil() {
   const [, setLocation] = useLocation();
   const { user, profile, token, isLoading, isLoggedIn, logout, refreshProfile } = useAuth();
+  const { t } = useLanguage();
   const { toast } = useToast();
 
   const updateMutation = useAuthUpdateProfile({
@@ -96,10 +98,10 @@ export default function MiPerfil() {
           queryClient.invalidateQueries({ queryKey: getListMyOpportunitiesQueryKey() });
           oppForm.reset();
           setShowNewOpportunity(false);
-          toast({ title: "Oportunidad publicada", description: "Ya está visible en el mercado de pases." });
+          toast({ title: t("miPerfil.opportunityPublished"), description: t("miPerfil.opportunityPublishedDesc") });
         },
         onError: () => {
-          toast({ title: "Error", description: "No se pudo publicar la oportunidad.", variant: "destructive" });
+          toast({ title: "Error", description: t("miPerfil.publishError"), variant: "destructive" });
         },
       }
     );
@@ -111,10 +113,10 @@ export default function MiPerfil() {
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListMyOpportunitiesQueryKey() });
-          toast({ title: "Oportunidad eliminada" });
+          toast({ title: t("miPerfil.opportunityDeleted") });
         },
         onError: () => {
-          toast({ title: "Error", description: "No se pudo eliminar.", variant: "destructive" });
+          toast({ title: "Error", description: t("miPerfil.deleteError"), variant: "destructive" });
         },
       }
     );
@@ -149,13 +151,13 @@ export default function MiPerfil() {
       await updateMutation.mutateAsync({ data });
       await refreshProfile();
       toast({
-        title: "Perfil actualizado",
-        description: "Tus datos se guardaron correctamente.",
+        title: t("miPerfil.profileUpdated"),
+        description: t("miPerfil.profileUpdatedDesc"),
       });
     } catch (err) {
       toast({
         title: "Error",
-        description: "No se pudo actualizar el perfil.",
+        description: t("miPerfil.updateError"),
         variant: "destructive"
       });
     }
@@ -175,9 +177,9 @@ export default function MiPerfil() {
   }
 
   const roleLabels = {
-    player: { icon: User, label: "Jugador", color: "bg-orange-100 text-orange-700" },
-    agent: { icon: Briefcase, label: "Agente", color: "bg-cyan-100 text-cyan-700" },
-    club: { icon: Building2, label: "Club", color: "bg-green-100 text-green-700" }
+    player: { icon: User, label: t("miPerfil.roleePlayer"), color: "bg-orange-100 text-orange-700" },
+    agent: { icon: Briefcase, label: t("miPerfil.roleAgent"), color: "bg-cyan-100 text-cyan-700" },
+    club: { icon: Building2, label: t("miPerfil.roleClub"), color: "bg-green-100 text-green-700" }
   };
   
   const RoleIcon = roleLabels[user.role].icon;
@@ -191,10 +193,10 @@ export default function MiPerfil() {
           <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl p-4">
             <div className="flex items-center gap-3">
               <MailWarning className="w-5 h-5 shrink-0" />
-              <p className="text-sm font-medium">Todavía no confirmaste tu email. Revisá tu bandeja de entrada.</p>
+              <p className="text-sm font-medium">{t("miPerfil.emailNotVerified")}</p>
             </div>
             {verificationResent ? (
-              <span className="text-sm font-medium text-amber-700">Enlace reenviado ✓</span>
+              <span className="text-sm font-medium text-amber-700">{t("miPerfil.linkResent")}</span>
             ) : (
               <Button
                 size="sm"
@@ -203,7 +205,7 @@ export default function MiPerfil() {
                 onClick={handleResendVerification}
                 disabled={resendMutation.isPending}
               >
-                {resendMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Reenviar email"}
+                {resendMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : t("miPerfil.resendEmail")}
               </Button>
             )}
           </div>
@@ -227,15 +229,15 @@ export default function MiPerfil() {
           </div>
           
           <Button variant="outline" className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700" onClick={handleLogout}>
-            <LogOut className="w-4 h-4 mr-2" /> Cerrar Sesión
+            <LogOut className="w-4 h-4 mr-2" /> {t("miPerfil.logout")}
           </Button>
         </div>
 
         {/* Form Card */}
         <Card className="p-6 md:p-8 shadow-sm">
           <div className="mb-8 border-b pb-4">
-            <h2 className="text-xl font-bold text-slate-900">Editar Información Pública</h2>
-            <p className="text-slate-500 mt-1">Estos datos son visibles en el buscador de la plataforma.</p>
+            <h2 className="text-xl font-bold text-slate-900">{t("miPerfil.editPublicInfo")}</h2>
+            <p className="text-slate-500 mt-1">{t("miPerfil.editPublicInfoSubtitle")}</p>
           </div>
 
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -245,61 +247,61 @@ export default function MiPerfil() {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label>Nombre completo</Label>
+                    <Label>{t("miPerfil.fullName")}</Label>
                     <Input {...form.register("name")} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Nacionalidad</Label>
+                    <Label>{t("miPerfil.nationality")}</Label>
                     <Input {...form.register("nationality")} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Edad</Label>
+                    <Label>{t("miPerfil.age")}</Label>
                     <Input type="number" {...form.register("age")} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Ubicación actual</Label>
+                    <Label>{t("miPerfil.currentLocation")}</Label>
                     <Input {...form.register("location")} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Posición principal</Label>
+                    <Label>{t("miPerfil.mainPosition")}</Label>
                     <Select {...form.register("position")}>
-                      <option value="Arquero">Arquero</option>
-                      <option value="Defensor">Defensor Central</option>
-                      <option value="Lateral">Lateral</option>
-                      <option value="Mediocampista">Mediocampista</option>
-                      <option value="Volante">Volante Ofensivo</option>
-                      <option value="Extremo">Extremo</option>
-                      <option value="Delantero">Delantero Centro</option>
+                      <option value="Arquero">{t("profiles.goalkeeper")}</option>
+                      <option value="Defensor">{t("profiles.centerBack")}</option>
+                      <option value="Lateral">{t("profiles.fullback")}</option>
+                      <option value="Mediocampista">{t("profiles.midfielder")}</option>
+                      <option value="Volante">{t("profiles.attackingMid")}</option>
+                      <option value="Extremo">{t("profiles.winger")}</option>
+                      <option value="Delantero">{t("profiles.striker")}</option>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Estado contractual</Label>
+                    <Label>{t("miPerfil.contractStatus")}</Label>
                     <Select {...form.register("status")}>
-                      <option value="Libre">Jugador Libre</option>
-                      <option value="Contratado">Con contrato vigente</option>
+                      <option value="Libre">{t("miPerfil.freeAgentOption")}</option>
+                      <option value="Contratado">{t("miPerfil.underContract")}</option>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Teléfono / WhatsApp</Label>
+                    <Label>{t("miPerfil.phone")}</Label>
                     <Input {...form.register("phone")} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Link de Video (Highlights)</Label>
+                    <Label>{t("miPerfil.videoLink")}</Label>
                     <Input {...form.register("videoUrl")} placeholder="https://youtube.com/..." />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4 bg-slate-50 p-5 rounded-2xl border border-slate-100">
                   <div className="space-y-2">
-                    <Label>Partidos</Label>
+                    <Label>{t("miPerfil.matches")}</Label>
                     <Input type="number" {...form.register("matches")} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Goles</Label>
+                    <Label>{t("miPerfil.goals")}</Label>
                     <Input type="number" {...form.register("goals")} />
                   </div>
                   <div className="space-y-2">
-                    <Label>Asistencias</Label>
+                    <Label>{t("miPerfil.assists")}</Label>
                     <Input type="number" {...form.register("assists")} />
                   </div>
                 </div>
@@ -310,19 +312,19 @@ export default function MiPerfil() {
             {user.role === "agent" && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label>Nombre o Agencia</Label>
+                  <Label>{t("miPerfil.nameOrAgency")}</Label>
                   <Input {...form.register("name")} />
                 </div>
                 <div className="space-y-2">
-                  <Label>País base</Label>
+                  <Label>{t("miPerfil.baseCountry")}</Label>
                   <Input {...form.register("country")} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Licencia FIFA</Label>
+                  <Label>{t("miPerfil.fifaLicense")}</Label>
                   <Input {...form.register("license")} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Teléfono / WhatsApp</Label>
+                  <Label>{t("miPerfil.phone")}</Label>
                   <Input {...form.register("phone")} />
                 </div>
               </div>
@@ -332,19 +334,19 @@ export default function MiPerfil() {
             {user.role === "club" && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label>Nombre de la institución</Label>
+                  <Label>{t("miPerfil.institutionName")}</Label>
                   <Input {...form.register("name")} />
                 </div>
                 <div className="space-y-2">
-                  <Label>País</Label>
+                  <Label>{t("miPerfil.country")}</Label>
                   <Input {...form.register("country")} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Categoría / Liga</Label>
+                  <Label>{t("miPerfil.categoryLeague")}</Label>
                   <Input {...form.register("category")} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Teléfono de contacto</Label>
+                  <Label>{t("miPerfil.contactPhone")}</Label>
                   <Input {...form.register("phone")} />
                 </div>
               </div>
@@ -353,7 +355,7 @@ export default function MiPerfil() {
             {/* SHARED FIELDS */}
             <div className="space-y-4 border-t pt-6">
               <div className="space-y-2">
-                <Label>Link de Foto / Escudo / Logo</Label>
+                <Label>{t("miPerfil.photoLogoLink")}</Label>
                 <div className="flex gap-4 items-start">
                   <Input {...form.register("imageUrl")} placeholder="https://..." className="flex-grow" />
                   {form.watch("imageUrl") && (
@@ -370,7 +372,7 @@ export default function MiPerfil() {
               </div>
 
               <div className="space-y-2">
-                <Label>{user.role === "player" ? "Biografía / Descripción" : "Descripción"}</Label>
+                <Label>{user.role === "player" ? t("miPerfil.bioDescription") : t("miPerfil.description")}</Label>
                 <Textarea 
                   {...form.register(user.role === "club" ? "description" : "bio")} 
                   className="min-h-[120px]"
@@ -381,9 +383,9 @@ export default function MiPerfil() {
             <div className="pt-6">
               <Button type="submit" size="lg" className="w-full md:w-auto px-10" disabled={updateMutation.isPending}>
                 {updateMutation.isPending ? (
-                  <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Guardando...</>
+                  <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> {t("miPerfil.saving")}</>
                 ) : (
-                  <><Save className="w-5 h-5 mr-2" /> Guardar Cambios</>
+                  <><Save className="w-5 h-5 mr-2" /> {t("miPerfil.saveChanges")}</>
                 )}
               </Button>
             </div>
@@ -395,12 +397,12 @@ export default function MiPerfil() {
           <Card className="p-6 md:p-8 shadow-sm mt-8">
             <div className="mb-6 border-b pb-4 flex items-center justify-between gap-4">
               <div>
-                <h2 className="text-xl font-bold text-slate-900">Mis Oportunidades Publicadas</h2>
-                <p className="text-slate-500 mt-1">Gestioná las búsquedas activas de tu club.</p>
+                <h2 className="text-xl font-bold text-slate-900">{t("miPerfil.myOpportunities")}</h2>
+                <p className="text-slate-500 mt-1">{t("miPerfil.myOpportunitiesSubtitle")}</p>
               </div>
               {!showNewOpportunity && (
                 <Button onClick={() => setShowNewOpportunity(true)}>
-                  <Plus className="w-4 h-4 mr-2" /> Publicar Nueva
+                  <Plus className="w-4 h-4 mr-2" /> {t("miPerfil.publishNew")}
                 </Button>
               )}
             </div>
@@ -412,23 +414,23 @@ export default function MiPerfil() {
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Título de la búsqueda *</Label>
-                    <Input {...oppForm.register("title")} placeholder="Ej. Delantero centro para 1ra división" />
+                    <Label>{t("miPerfil.searchTitle")}</Label>
+                    <Input {...oppForm.register("title")} placeholder={t("miPerfil.searchTitlePlaceholder")} />
                     {oppForm.formState.errors.title && (
                       <p className="text-red-500 text-xs">{oppForm.formState.errors.title.message}</p>
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label>Posición buscada *</Label>
+                    <Label>{t("miPerfil.positionSought")}</Label>
                     <Select {...oppForm.register("role")}>
-                      <option value="">Seleccionar posición</option>
-                      <option value="Arquero">Arquero</option>
-                      <option value="Defensor">Defensor Central</option>
-                      <option value="Lateral">Lateral</option>
-                      <option value="Mediocampista">Mediocampista</option>
-                      <option value="Volante">Volante Ofensivo</option>
-                      <option value="Extremo">Extremo</option>
-                      <option value="Delantero">Delantero Centro</option>
+                      <option value="">{t("miPerfil.selectPosition")}</option>
+                      <option value="Arquero">{t("profiles.goalkeeper")}</option>
+                      <option value="Defensor">{t("profiles.centerBack")}</option>
+                      <option value="Lateral">{t("profiles.fullback")}</option>
+                      <option value="Mediocampista">{t("profiles.midfielder")}</option>
+                      <option value="Volante">{t("profiles.attackingMid")}</option>
+                      <option value="Extremo">{t("profiles.winger")}</option>
+                      <option value="Delantero">{t("profiles.striker")}</option>
                     </Select>
                     {oppForm.formState.errors.role && (
                       <p className="text-red-500 text-xs">{oppForm.formState.errors.role.message}</p>
@@ -436,15 +438,15 @@ export default function MiPerfil() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Descripción</Label>
-                  <Textarea {...oppForm.register("description")} placeholder="Detalles del perfil que buscás, condiciones, etc." rows={3} />
+                  <Label>{t("miPerfil.description")}</Label>
+                  <Textarea {...oppForm.register("description")} placeholder={t("miPerfil.oppDescriptionPlaceholder")} rows={3} />
                 </div>
                 <div className="flex gap-2 justify-end">
                   <Button type="button" variant="ghost" onClick={() => { setShowNewOpportunity(false); oppForm.reset(); }}>
-                    <X className="w-4 h-4 mr-1.5" /> Cancelar
+                    <X className="w-4 h-4 mr-1.5" /> {t("miPerfil.cancel")}
                   </Button>
                   <Button type="submit" disabled={createOpportunity.isPending}>
-                    {createOpportunity.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Publicar"}
+                    {createOpportunity.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : t("miPerfil.publish")}
                   </Button>
                 </div>
               </form>
@@ -476,7 +478,7 @@ export default function MiPerfil() {
               </div>
             ) : (
               !showNewOpportunity && (
-                <p className="text-slate-500 text-center py-8">Todavía no publicaste ninguna búsqueda.</p>
+                <p className="text-slate-500 text-center py-8">{t("miPerfil.noOpportunitiesPosted")}</p>
               )
             )}
           </Card>

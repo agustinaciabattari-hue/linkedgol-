@@ -3,8 +3,10 @@ import { Link } from "wouter";
 import { Mail, Loader2, CheckCircle2, MessageCircle } from "lucide-react";
 import { Button, Card, Input, Label, Textarea } from "@/components/ui/shared";
 import { useSendContactMessage } from "@workspace/api-client-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Contacto() {
+  const { t } = useLanguage();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -14,7 +16,7 @@ export default function Contacto() {
   const mutation = useSendContactMessage({
     mutation: {
       onSuccess: () => setSent(true),
-      onError: () => setError("No se pudo enviar el mensaje. Intentá de nuevo en unos minutos."),
+      onError: () => setError(t("contacto.sendError")),
     },
   });
 
@@ -32,9 +34,9 @@ export default function Contacto() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-primary mb-4 shadow-sm">
             <MessageCircle className="w-8 h-8" />
           </div>
-          <h1 className="text-4xl font-display font-bold text-slate-900 mb-3">Contactanos</h1>
+          <h1 className="text-4xl font-display font-bold text-slate-900 mb-3">{t("contacto.title")}</h1>
           <p className="text-lg text-slate-600">
-            ¿Tenés una consulta, sugerencia o problema con tu cuenta? Escribinos.
+            {t("contacto.subtitle")}
           </p>
         </div>
 
@@ -42,21 +44,21 @@ export default function Contacto() {
           {sent ? (
             <div className="text-center py-8">
               <CheckCircle2 className="w-14 h-14 text-green-500 mx-auto mb-4" />
-              <h2 className="text-xl font-bold text-slate-900 mb-2">¡Mensaje enviado!</h2>
-              <p className="text-slate-500 mb-6">Te vamos a responder a la brevedad al email que nos dejaste.</p>
+              <h2 className="text-xl font-bold text-slate-900 mb-2">{t("contacto.sentTitle")}</h2>
+              <p className="text-slate-500 mb-6">{t("contacto.sentDesc")}</p>
               <Link href="/">
-                <Button variant="outline">Volver al inicio</Button>
+                <Button variant="outline">{t("contacto.backHome")}</Button>
               </Link>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label>Nombre *</Label>
-                  <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Tu nombre" required />
+                  <Label>{t("contacto.name")}</Label>
+                  <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("contacto.namePlaceholder")} required />
                 </div>
                 <div className="space-y-2">
-                  <Label>Email *</Label>
+                  <Label>{t("contacto.email")}</Label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <Mail className="w-4 h-4 text-slate-400" />
@@ -74,11 +76,11 @@ export default function Contacto() {
               </div>
 
               <div className="space-y-2">
-                <Label>Mensaje *</Label>
+                <Label>{t("contacto.message")}</Label>
                 <Textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Contanos en qué te podemos ayudar..."
+                  placeholder={t("contacto.messagePlaceholder")}
                   rows={6}
                   required
                 />
@@ -91,7 +93,7 @@ export default function Contacto() {
               )}
 
               <Button type="submit" size="lg" className="w-full" disabled={mutation.isPending}>
-                {mutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : "Enviar mensaje"}
+                {mutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : t("contacto.sendMessage")}
               </Button>
             </form>
           )}
