@@ -23,6 +23,8 @@ tags:
     description: User authentication
   - name: contact
     description: Public contact form
+  - name: stats
+    description: Public aggregate counts
 
 paths:
   /auth/register:
@@ -290,6 +292,27 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+
+  /stats:
+    get:
+      operationId: getStats
+      tags: [stats]
+      summary: Public aggregate counts (players/agents/clubs) — no personal data
+      responses:
+        "200":
+          description: Counts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: integer
+                  agents:
+                    type: integer
+                  clubs:
+                    type: integer
+                required: [players, agents, clubs]
 
   /players:
     get:
