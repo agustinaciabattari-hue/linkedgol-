@@ -6,3 +6,4 @@ export * from "./siteContent";
 export * from "./contact";
 export * from "./admin";
 export * from "./stats";
+export * from "./translate";
