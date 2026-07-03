@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/shared";
 import { useListSiteContent } from "@workspace/api-client-react";
 import { getContentValue } from "@/lib/site-content";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { SEO } from "@/components/SEO";
 
 const beneficios = [
   { icon: <Globe className="w-6 h-6" />, titulo: "Visibilidad internacional", desc: "Tu perfil llega a clubes y agentes de toda Latinoamérica y el mundo." },
@@ -27,6 +28,11 @@ export default function LandingJugador() {
 
   return (
     <div className="min-h-screen">
+      <SEO
+        title="Para Jugadores — Creá tu perfil y conectate con clubes"
+        description="Registrate gratis en Linkedgol como jugador, creá tu perfil profesional y aparecé en las búsquedas de clubes y agentes de toda Latinoamérica."
+        path="/jugador"
+      />
 
       {/* Hero */}
       <section className="relative pt-32 pb-24 overflow-hidden bg-gradient-to-br from-orange-600 via-orange-500 to-amber-400">

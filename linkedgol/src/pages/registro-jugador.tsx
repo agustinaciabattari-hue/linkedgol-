@@ -8,6 +8,7 @@ import { Button, Card, Input, Label, Select, Textarea } from "@/components/ui/sh
 import { useAuthRegister } from "@workspace/api-client-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { SEO } from "@/components/SEO";
 
 const formSchema = z.object({
   name: z.string().min(2, "El nombre es obligatorio"),
@@ -70,6 +71,11 @@ export default function RegistroJugador() {
 
   return (
     <div className="min-h-screen bg-slate-50 pt-28 pb-20">
+      <SEO
+        title="Registrate como Jugador"
+        description="Creá gratis tu perfil de jugador en Linkedgol y aparecé en las búsquedas de clubes y agentes de toda Latinoamérica."
+        path="/registro/jugador"
+      />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="text-center mb-10">

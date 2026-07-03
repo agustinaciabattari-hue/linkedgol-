@@ -5,6 +5,7 @@ import { Search, Filter, MapPin, UserPlus, CheckCircle2 } from "lucide-react";
 import { Button, Card, Badge, Input, Select, Label } from "@/components/ui/shared";
 import { useListPlayers } from "@workspace/api-client-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { SEO } from "@/components/SEO";
 
 export default function Profiles() {
   const { t } = useLanguage();
@@ -23,6 +24,11 @@ export default function Profiles() {
 
   return (
     <div className="min-h-screen bg-slate-50 pt-24 pb-20">
+      <SEO
+        title="Explorar Perfiles de Jugadores"
+        description="Buscá jugadores de fútbol libres por posición, país y estado contractual en la base de datos de Linkedgol."
+        path="/perfiles"
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">

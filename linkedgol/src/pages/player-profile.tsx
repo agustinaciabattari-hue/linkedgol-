@@ -6,6 +6,7 @@ import { useGetPlayer, useContactPlayer } from "@workspace/api-client-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { TranslateToggle } from "@/components/TranslateToggle";
+import { SEO } from "@/components/SEO";
 
 export default function PlayerProfile() {
   const params = useParams();
@@ -59,6 +60,11 @@ export default function PlayerProfile() {
 
   return (
     <div className="min-h-screen bg-slate-50 pt-24 pb-20">
+      <SEO
+        title={`${player.name} — ${player.position}, ${player.nationality}`}
+        description={player.bio?.slice(0, 155) || `Perfil de ${player.name}, ${player.position} de ${player.nationality}, ${player.age} años. Contactalo a través de Linkedgol.`}
+        path={`/perfil/${player.id}`}
+      />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <Link href="/perfiles" className="inline-flex items-center text-sm font-semibold text-muted-foreground hover:text-primary mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4 mr-1" /> Volver al buscador

@@ -7,10 +7,12 @@
 // en consecuencia.
 
 import { Link } from "wouter";
+import { SEO } from "@/components/SEO";
 
 export default function Privacidad() {
   return (
     <div className="min-h-screen bg-white pt-28 pb-20">
+      <SEO title="Política de Privacidad" description="Política de privacidad y protección de datos de la plataforma Linkedgol." path="/privacidad" />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <Link href="/" className="text-sm font-semibold text-primary hover:underline">← Volver al inicio</Link>
 

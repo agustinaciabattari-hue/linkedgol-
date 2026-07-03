@@ -5,6 +5,7 @@ import { Button, Card, Badge } from "@/components/ui/shared";
 import { useListPlayers, useListOpportunities, useListSiteContent, useGetStats } from "@workspace/api-client-react";
 import { getContentValue, getContentBoolean } from "@/lib/site-content";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { SEO } from "@/components/SEO";
 
 export default function Home() {
   const { t } = useLanguage();
@@ -22,6 +23,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
+      <SEO
+        title="Linkedgol — Conectando el talento con oportunidades en el fútbol"
+        description="La plataforma donde jugadores, agentes y clubes de fútbol de toda Latinoamérica se conectan, negocian y construyen su carrera. Creá tu perfil gratis."
+        path="/"
+      />
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-slate-900">
         {/* Background Image & Overlay */}

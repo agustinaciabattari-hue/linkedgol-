@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/shared";
 import { useListSiteContent } from "@workspace/api-client-react";
 import { getContentValue } from "@/lib/site-content";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { SEO } from "@/components/SEO";
 
 const beneficios = [
   { icon: <Users className="w-6 h-6" />, titulo: "Gestioná múltiples jugadores", desc: "Subí y administrá todos los jugadores que representás desde un solo panel." },
@@ -27,6 +28,11 @@ export default function LandingAgente() {
 
   return (
     <div className="min-h-screen">
+      <SEO
+        title="Para Agentes — Gestioná tu cartera de jugadores"
+        description="Registrate como agente FIFA en Linkedgol, gestioná tu cartera de jugadores y conectá con clubes verificados de toda Latinoamérica."
+        path="/agente"
+      />
 
       {/* Hero */}
       <section className="relative pt-32 pb-24 overflow-hidden bg-gradient-to-br from-cyan-700 via-cyan-600 to-blue-500">

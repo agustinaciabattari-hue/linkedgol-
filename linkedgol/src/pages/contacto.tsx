@@ -4,6 +4,7 @@ import { Mail, Loader2, CheckCircle2, MessageCircle } from "lucide-react";
 import { Button, Card, Input, Label, Textarea } from "@/components/ui/shared";
 import { useSendContactMessage } from "@workspace/api-client-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { SEO } from "@/components/SEO";
 
 export default function Contacto() {
   const { t } = useLanguage();
@@ -29,6 +30,7 @@ export default function Contacto() {
 
   return (
     <div className="min-h-screen bg-slate-50 pt-28 pb-20">
+      <SEO title="Contacto" description="¿Tenés una consulta, sugerencia o problema con tu cuenta de Linkedgol? Escribinos." path="/contacto" />
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-primary mb-4 shadow-sm">

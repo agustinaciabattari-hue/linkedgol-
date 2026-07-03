@@ -4,10 +4,12 @@
 // reales, especialmente en lo referido a protección de datos personales.
 
 import { Link } from "wouter";
+import { SEO } from "@/components/SEO";
 
 export default function Terminos() {
   return (
     <div className="min-h-screen bg-white pt-28 pb-20">
+      <SEO title="Términos y Condiciones" description="Términos y condiciones de uso de la plataforma Linkedgol." path="/terminos" />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <Link href="/" className="text-sm font-semibold text-primary hover:underline">← Volver al inicio</Link>
 

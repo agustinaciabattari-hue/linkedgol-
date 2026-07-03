@@ -8,6 +8,7 @@ import { Button, Card, Input, Label, Textarea } from "@/components/ui/shared";
 import { useAuthRegister } from "@workspace/api-client-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { SEO } from "@/components/SEO";
 
 const formSchema = z.object({
   name: z.string().min(2, "El nombre del club es obligatorio"),
@@ -61,6 +62,11 @@ export default function RegistroClub() {
 
   return (
     <div className="min-h-screen bg-slate-50 pt-28 pb-20">
+      <SEO
+        title="Registrá tu Club"
+        description="Registrá tu club en Linkedgol, publicá oportunidades y encontrá jugadores libres y agentes de toda Latinoamérica."
+        path="/registro/club"
+      />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="text-center mb-10">

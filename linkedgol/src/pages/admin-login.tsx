@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { Shield, Lock } from "lucide-react";
 import { Card, Input, Button, Label } from "@/components/ui/shared";
 import { useAdminLogin } from "@workspace/api-client-react";
+import { SEO } from "@/components/SEO";
 
 export default function AdminLogin() {
   const [, setLocation] = useLocation();
@@ -37,6 +38,7 @@ export default function AdminLogin() {
 
   return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+      <SEO title="Admin" description="Panel de administración de Linkedgol." path="/admin" noindex />
       {/* Decorative background effects */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] pointer-events-none"></div>
       

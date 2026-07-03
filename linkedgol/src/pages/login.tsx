@@ -5,6 +5,7 @@ import { Card, Input, Button, Label } from "@/components/ui/shared";
 import { useAuthLogin } from "@workspace/api-client-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { SEO } from "@/components/SEO";
 import { motion } from "framer-motion";
 
 export default function Login() {
@@ -49,6 +50,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+      <SEO title="Iniciar Sesión" description="Ingresá a tu cuenta de Linkedgol." path="/ingresar" noindex />
       {/* Decorative background effects */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[150px] pointer-events-none"></div>
       

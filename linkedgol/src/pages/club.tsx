@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/shared";
 import { useListSiteContent } from "@workspace/api-client-react";
 import { getContentValue } from "@/lib/site-content";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { SEO } from "@/components/SEO";
 
 const beneficios = [
   { icon: <Search className="w-6 h-6" />, titulo: "Buscador avanzado", desc: "Filtrá por posición, edad, nacionalidad y estado contractual en segundos." },
@@ -34,6 +35,11 @@ export default function LandingClub() {
 
   return (
     <div className="min-h-screen">
+      <SEO
+        title="Para Clubes — Encontrá el jugador que necesitás"
+        description="Registrá tu club en Linkedgol, publicá oportunidades y encontrá jugadores libres y agentes de toda Latinoamérica."
+        path="/club"
+      />
 
       {/* Hero */}
       <section className="relative pt-32 pb-24 overflow-hidden bg-gradient-to-br from-green-800 via-green-600 to-emerald-500">

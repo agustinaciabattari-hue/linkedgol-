@@ -7,6 +7,7 @@ import { LogOut, User, Building2, Briefcase, Loader2, Save, MailWarning, Plus, T
 import { Button, Card, Input, Label, Select, Textarea, Badge } from "@/components/ui/shared";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { SEO } from "@/components/SEO";
 import {
   useAuthUpdateProfile, useAuthResendVerification,
   useListMyOpportunities, useCreateOpportunity, useDeleteOpportunity,
@@ -186,6 +187,7 @@ export default function MiPerfil() {
 
   return (
     <div className="min-h-screen bg-slate-50 pt-28 pb-20">
+      <SEO title="Mi Perfil" description="Editá tu perfil de Linkedgol." path="/mi-perfil" noindex />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Email verification banner */}

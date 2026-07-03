@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { Button, Input, Select, Textarea, Label, Card } from "@/components/ui/shared";
 import { cn } from "@/lib/utils";
+import { SEO } from "@/components/SEO";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -320,6 +321,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="flex flex-col h-screen bg-slate-50 relative">
+      <SEO title="Panel de Administración" description="Panel de administración de Linkedgol." path="/admin/dashboard" noindex />
       {/* Top Navbar */}
       <header className="bg-primary text-white py-4 px-6 shadow-md flex justify-between items-center shrink-0 z-10 relative">
         <div className="flex items-center gap-3">

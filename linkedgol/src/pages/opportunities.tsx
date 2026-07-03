@@ -7,6 +7,7 @@ import { useListOpportunities, useApplyToOpportunity } from "@workspace/api-clie
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { TranslateToggle } from "@/components/TranslateToggle";
+import { SEO } from "@/components/SEO";
 
 export default function Opportunities() {
   const { data: opportunities, isLoading } = useListOpportunities();
@@ -40,6 +41,11 @@ export default function Opportunities() {
 
   return (
     <div className="min-h-screen bg-slate-50 pt-24 pb-20">
+      <SEO
+        title="Oportunidades Activas — Mercado de Pases"
+        description="Descubrí qué posiciones están buscando los clubes en este momento y postulá directamente desde Linkedgol."
+        path="/oportunidades"
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6 bg-blue-900 rounded-3xl p-8 md:p-10 shadow-xl overflow-hidden relative">
