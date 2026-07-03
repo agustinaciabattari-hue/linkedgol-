@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /mi-perfil
+Disallow: /ingresar
+Disallow: /verificar-email
+Disallow: /restablecer-password
+
+Sitemap: https://www.linkedgol.com/api/sitemap.xml
