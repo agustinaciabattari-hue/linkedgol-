@@ -1,4 +1,4 @@
-export type ContentFieldType = "text" | "textarea" | "url" | "image";
+export type ContentFieldType = "text" | "textarea" | "url" | "image" | "toggle";
 export type ContentField = { key: string; label: string; type: ContentFieldType; default: string };
 export type ContentSection = { title: string; fields: ContentField[] };
 export type ContentPage = { id: string; name: string; route: string; sections: ContentSection[] };
@@ -14,9 +14,7 @@ export const CONTENT_PAGES: ContentPage[] = [
         { key: "home_hero_image", label: "Imagen de fondo (URL)", type: "image", default: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=1920&h=1080&fit=crop" },
       ]},
       { title: "Estadísticas", fields: [
-        { key: "home_stats_players", label: "Cantidad de jugadores", type: "text", default: "1,200+" },
-        { key: "home_stats_agents", label: "Cantidad de agentes", type: "text", default: "150+" },
-        { key: "home_stats_clubs", label: "Cantidad de clubes", type: "text", default: "80+" },
+        { key: "home_stats_show", label: "Mostrar contadores de estadísticas", type: "toggle", default: "true" },
       ]},
       { title: "Cómo funciona", fields: [
         { key: "home_how_title", label: "Título de la sección", type: "text", default: "¿Cómo funciona Linkedgol?" },
@@ -86,4 +84,10 @@ export function getContentValue(items: { key: string; value: string }[] | undefi
   const found = items?.find(i => i.key === key);
   if (!found || !found.value) return fallback;
   return found.value;
+}
+
+export function getContentBoolean(items: { key: string; value: string }[] | undefined, key: string, fallback: boolean): boolean {
+  const found = items?.find(i => i.key === key);
+  if (!found || found.value === "") return fallback;
+  return found.value === "true";
 }
