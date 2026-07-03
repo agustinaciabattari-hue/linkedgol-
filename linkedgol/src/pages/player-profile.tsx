@@ -5,6 +5,7 @@ import { Button, Card, Badge, Textarea } from "@/components/ui/shared";
 import { useGetPlayer, useContactPlayer } from "@workspace/api-client-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { TranslateToggle } from "@/components/TranslateToggle";
 
 export default function PlayerProfile() {
   const params = useParams();
@@ -151,6 +152,7 @@ export default function PlayerProfile() {
               <p className="text-slate-600 leading-relaxed">
                 {player.bio || "No hay biografía disponible para este jugador."}
               </p>
+              {player.bio && <TranslateToggle text={player.bio} />}
             </Card>
 
             {/* Video (if available) */}
@@ -200,6 +202,12 @@ export default function PlayerProfile() {
                   <span className="text-slate-500">Nacionalidad</span>
                   <span className="font-medium text-slate-900">{player.nationality}</span>
                 </li>
+                {player.otherCitizenships && (
+                  <li className="flex justify-between border-b pb-2">
+                    <span className="text-slate-500">Otras ciudadanías</span>
+                    <span className="font-medium text-slate-900">{player.otherCitizenships}</span>
+                  </li>
+                )}
                 <li className="flex justify-between border-b pb-2">
                   <span className="text-slate-500">Edad</span>
                   <span className="font-medium text-slate-900">{player.age} años</span>

@@ -4,6 +4,7 @@ import { CheckCircle, ArrowRight, Video, Star, Globe, Shield } from "lucide-reac
 import { Button } from "@/components/ui/shared";
 import { useListSiteContent } from "@workspace/api-client-react";
 import { getContentValue } from "@/lib/site-content";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const beneficios = [
   { icon: <Globe className="w-6 h-6" />, titulo: "Visibilidad internacional", desc: "Tu perfil llega a clubes y agentes de toda Latinoamérica y el mundo." },
@@ -22,6 +23,7 @@ const pasos = [
 export default function LandingJugador() {
   const { data: content } = useListSiteContent();
   const c = (key: string, fallback: string) => getContentValue(content, key, fallback);
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen">
@@ -34,18 +36,18 @@ export default function LandingJugador() {
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <span className="inline-block bg-white/20 border border-white/30 text-white text-sm font-semibold px-4 py-1.5 rounded-full mb-6 backdrop-blur-sm">
-              {c("jugador_hero_badge", "👤 Para Jugadores")}
+              {c("jugador_hero_badge", t("jugador.badge"))}
             </span>
             <h1 className="text-4xl md:text-6xl font-display font-black text-white leading-tight mb-6 whitespace-pre-line">
-              {c("jugador_hero_title", "Tu próximo club\nte está buscando")}
+              {c("jugador_hero_title", t("jugador.title"))}
             </h1>
             <p className="text-xl text-white/85 max-w-2xl mx-auto mb-10 leading-relaxed whitespace-pre-line">
-              {c("jugador_hero_subtitle", "Creá tu perfil profesional en Linkedgol y conectate con clubes y agentes de toda Latinoamérica. Gratis, simple y efectivo.")}
+              {c("jugador_hero_subtitle", t("jugador.subtitle"))}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href={c("jugador_cta_link", "/registro/jugador")}>
                 <Button size="lg" className="bg-white text-orange-600 hover:bg-orange-50 font-bold shadow-xl shadow-orange-900/20">
-                  {c("jugador_cta_text", "Crear mi perfil gratis")} <ArrowRight className="w-5 h-5 ml-2" />
+                  {c("jugador_cta_text", t("jugador.cta"))} <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
               <Link href="/perfiles">
@@ -159,14 +161,14 @@ export default function LandingJugador() {
       <section className="py-20 bg-orange-600 text-center">
         <div className="max-w-2xl mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-display font-black text-white mb-4 whitespace-pre-line">
-            {c("jugador_final_title", "Empezá hoy. Es gratis.")}
+            {c("jugador_final_title", t("jugador.finalTitle"))}
           </h2>
           <p className="text-white/80 text-lg mb-8 whitespace-pre-line">
-            {c("jugador_final_subtitle", "Registrate, completá tu perfil y empezá a aparecer en los resultados de búsqueda de clubes.")}
+            {c("jugador_final_subtitle", t("jugador.finalSubtitle"))}
           </p>
           <Link href={c("jugador_cta_link", "/registro/jugador")}>
             <Button size="lg" className="bg-white text-orange-600 hover:bg-orange-50 font-bold shadow-xl">
-              {c("jugador_cta_text", "Crear mi perfil ahora")} <ArrowRight className="w-5 h-5 ml-2" />
+              {c("jugador_cta_text", t("jugador.cta"))} <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
           </Link>
         </div>

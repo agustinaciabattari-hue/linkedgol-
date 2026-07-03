@@ -4,6 +4,7 @@ import { CheckCircle, ArrowRight, Search, Filter, MessageCircle, Trophy } from "
 import { Button } from "@/components/ui/shared";
 import { useListSiteContent } from "@workspace/api-client-react";
 import { getContentValue } from "@/lib/site-content";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const beneficios = [
   { icon: <Search className="w-6 h-6" />, titulo: "Buscador avanzado", desc: "Filtrá por posición, edad, nacionalidad y estado contractual en segundos." },
@@ -29,6 +30,7 @@ const necesidades = [
 export default function LandingClub() {
   const { data: content } = useListSiteContent();
   const c = (key: string, fallback: string) => getContentValue(content, key, fallback);
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen">
@@ -41,13 +43,13 @@ export default function LandingClub() {
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <span className="inline-block bg-white/20 border border-white/30 text-white text-sm font-semibold px-4 py-1.5 rounded-full mb-6 backdrop-blur-sm">
-              {c("club_hero_badge", "🏆 Para Clubes")}
+              {c("club_hero_badge", t("club.badge"))}
             </span>
             <h1 className="text-4xl md:text-6xl font-display font-black text-white leading-tight mb-6 whitespace-pre-line">
-              {c("club_hero_title", "Encontrá el jugador que tu club necesita")}
+              {c("club_hero_title", t("club.title"))}
             </h1>
             <p className="text-xl text-white/85 max-w-2xl mx-auto mb-10 leading-relaxed whitespace-pre-line">
-              {c("club_hero_subtitle", "Publicá oportunidades, buscá talento por posición y país, y conectate directo con jugadores y agentes.")}
+              {c("club_hero_subtitle", t("club.subtitle"))}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/perfiles">
@@ -57,7 +59,7 @@ export default function LandingClub() {
               </Link>
               <Link href={c("club_cta_link", "/registro/club")}>
                 <Button size="lg" variant="outline" className="border-white/50 text-white hover:bg-white/10">
-                  {c("club_cta_text", "Registrar mi club")}
+                  {c("club_cta_text", t("club.cta"))}
                 </Button>
               </Link>
             </div>
@@ -194,14 +196,14 @@ export default function LandingClub() {
       <section className="py-20 bg-green-700 text-center">
         <div className="max-w-2xl mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-display font-black text-white mb-4 whitespace-pre-line">
-            {c("club_final_title", "Reforzá tu plantel hoy.")}
+            {c("club_final_title", t("club.finalTitle"))}
           </h2>
           <p className="text-white/80 text-lg mb-8 whitespace-pre-line">
-            {c("club_final_subtitle", "Registrá tu club, publicá oportunidades y descubrí jugadores libres en toda Latinoamérica.")}
+            {c("club_final_subtitle", t("club.finalSubtitle"))}
           </p>
           <Link href={c("club_cta_link", "/registro/club")}>
             <Button size="lg" className="bg-white text-green-700 hover:bg-green-50 font-bold shadow-xl">
-              {c("club_cta_text", "Registrar mi club")} <ArrowRight className="w-5 h-5 ml-2" />
+              {c("club_cta_text", t("club.cta"))} <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
           </Link>
         </div>

@@ -6,6 +6,7 @@ import { Button, Card, Badge, Textarea } from "@/components/ui/shared";
 import { useListOpportunities, useApplyToOpportunity } from "@workspace/api-client-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { TranslateToggle } from "@/components/TranslateToggle";
 
 export default function Opportunities() {
   const { data: opportunities, isLoading } = useListOpportunities();
@@ -91,6 +92,7 @@ export default function Opportunities() {
                     </div>
                     <h3 className="font-bold text-xl text-foreground mb-3 leading-tight">{opp.title}</h3>
                     <p className="text-sm text-slate-600 line-clamp-3 mb-6 flex-grow leading-relaxed">{opp.description}</p>
+                    {opp.description && <TranslateToggle text={opp.description} />}
 
                     {isApplying ? (
                       <div className="pt-4 border-t border-slate-100 mt-auto space-y-3">

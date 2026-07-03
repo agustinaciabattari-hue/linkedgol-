@@ -4,11 +4,13 @@ import { Shield, Lock, Mail, Loader2, ArrowRight } from "lucide-react";
 import { Card, Input, Button, Label } from "@/components/ui/shared";
 import { useAuthLogin } from "@workspace/api-client-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
 
 export default function Login() {
   const [, setLocation] = useLocation();
   const { login, isLoggedIn, isLoading } = useAuth();
+  const { t } = useLanguage();
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -63,14 +65,14 @@ export default function Login() {
             </div>
             <span className="font-display font-bold text-3xl tracking-tight text-white">Linkedgol</span>
           </Link>
-          <h1 className="text-2xl font-semibold text-white tracking-tight">Iniciar Sesión</h1>
-          <p className="text-slate-400 mt-2 text-center max-w-xs">Ingresá a tu cuenta para gestionar tu perfil y conectar con la red.</p>
+          <h1 className="text-2xl font-semibold text-white tracking-tight">{t("login.title")}</h1>
+          <p className="text-slate-400 mt-2 text-center max-w-xs">{t("login.subtitle")}</p>
         </div>
 
         <Card className="p-8 border-slate-800 bg-slate-800/50 backdrop-blur-xl shadow-2xl mb-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label className="text-slate-300">Email</Label>
+              <Label className="text-slate-300">{t("login.email")}</Label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Mail className="w-5 h-5 text-slate-500" />
@@ -88,9 +90,9 @@ export default function Login() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label className="text-slate-300">Contraseña</Label>
+                <Label className="text-slate-300">{t("login.password")}</Label>
                 <Link href="/olvide-password" className="text-xs text-primary hover:underline">
-                  ¿Olvidaste tu contraseña?
+                  {t("login.forgotPassword")}
                 </Link>
               </div>
               <div className="relative">
@@ -119,13 +121,13 @@ export default function Login() {
               className="w-full h-12 text-base font-bold shadow-lg shadow-primary/20"
               disabled={loginMutation.isPending}
             >
-              {loginMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : "Ingresar a mi cuenta"}
+              {loginMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : t("login.submit")}
             </Button>
           </form>
         </Card>
 
         <div className="text-center space-y-4">
-          <p className="text-slate-400 text-sm">¿No tenés cuenta? Registrate gratis:</p>
+          <p className="text-slate-400 text-sm">{t("login.noAccount")}</p>
           <div className="flex flex-col gap-2">
             <Link href="/registro/jugador">
               <Button variant="outline" className="w-full bg-slate-800/50 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white justify-between px-6">

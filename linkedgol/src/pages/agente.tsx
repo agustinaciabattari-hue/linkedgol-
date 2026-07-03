@@ -4,6 +4,7 @@ import { CheckCircle, ArrowRight, Users, Briefcase, TrendingUp, ShieldCheck } fr
 import { Button } from "@/components/ui/shared";
 import { useListSiteContent } from "@workspace/api-client-react";
 import { getContentValue } from "@/lib/site-content";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const beneficios = [
   { icon: <Users className="w-6 h-6" />, titulo: "Gestioná múltiples jugadores", desc: "Subí y administrá todos los jugadores que representás desde un solo panel." },
@@ -22,6 +23,7 @@ const pasos = [
 export default function LandingAgente() {
   const { data: content } = useListSiteContent();
   const c = (key: string, fallback: string) => getContentValue(content, key, fallback);
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen">
@@ -34,18 +36,18 @@ export default function LandingAgente() {
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <span className="inline-block bg-white/20 border border-white/30 text-white text-sm font-semibold px-4 py-1.5 rounded-full mb-6 backdrop-blur-sm">
-              {c("agente_hero_badge", "💼 Para Agentes")}
+              {c("agente_hero_badge", t("agente.badge"))}
             </span>
             <h1 className="text-4xl md:text-6xl font-display font-black text-white leading-tight mb-6 whitespace-pre-line">
-              {c("agente_hero_title", "Gestioná tu cartera de jugadores en una sola plataforma")}
+              {c("agente_hero_title", t("agente.title"))}
             </h1>
             <p className="text-xl text-white/85 max-w-2xl mx-auto mb-10 leading-relaxed whitespace-pre-line">
-              {c("agente_hero_subtitle", "Linkedgol te da las herramientas para representar, conectar y cerrar acuerdos con clubes de toda Latinoamérica.")}
+              {c("agente_hero_subtitle", t("agente.subtitle"))}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href={c("agente_cta_link", "/registro/agente")}>
                 <Button size="lg" className="bg-white text-cyan-700 hover:bg-cyan-50 font-bold shadow-xl shadow-cyan-900/20">
-                  {c("agente_cta_text", "Registrate como agente")} <ArrowRight className="w-5 h-5 ml-2" />
+                  {c("agente_cta_text", t("agente.cta"))} <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
               <Link href="/oportunidades">
@@ -159,14 +161,14 @@ export default function LandingAgente() {
       <section className="py-20 bg-cyan-700 text-center">
         <div className="max-w-2xl mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-display font-black text-white mb-4 whitespace-pre-line">
-            {c("agente_final_title", "Sumate a la red de agentes FIFA.")}
+            {c("agente_final_title", t("agente.finalTitle"))}
           </h2>
           <p className="text-white/80 text-lg mb-8 whitespace-pre-line">
-            {c("agente_final_subtitle", "Conectá con clubes verificados y representá jugadores con la confianza que solo Linkedgol te da.")}
+            {c("agente_final_subtitle", t("agente.finalSubtitle"))}
           </p>
           <Link href={c("agente_cta_link", "/registro/agente")}>
             <Button size="lg" className="bg-white text-cyan-700 hover:bg-cyan-50 font-bold shadow-xl">
-              {c("agente_cta_text", "Registrarme como agente")} <ArrowRight className="w-5 h-5 ml-2" />
+              {c("agente_cta_text", t("agente.cta"))} <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
           </Link>
         </div>
