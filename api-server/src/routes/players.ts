@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, playersTable } from "@workspace/db";
+import { db, playersTable, messagesTable } from "@workspace/db";
 import { eq, and, gte, lte } from "drizzle-orm";
 import { requireUser } from "./auth";
 import { sendContactRelayEmail } from "../lib/email";
@@ -15,6 +15,7 @@ const publicPlayerColumns = {
   position: playersTable.position,
   age: playersTable.age,
   nationality: playersTable.nationality,
+  otherCitizenships: playersTable.otherCitizenships,
   status: playersTable.status,
   location: playersTable.location,
   bio: playersTable.bio,
@@ -73,6 +74,15 @@ router.post("/players/:id/contact", authLimiter, requireUser, async (req, res) =
     if (!player.email) return res.status(400).json({ error: "Este jugador no tiene un email de contacto configurado" });
 
     const sender = (req as any).authUser;
+
+    await db.insert(messagesTable).values({
+      type: "player_contact",
+      fromEmail: sender.email,
+      context: player.name,
+      subject: `Contacto a jugador: ${player.name}`,
+      body: message,
+    });
+
     await sendContactRelayEmail({
       to: player.email,
       fromName: sender.email,

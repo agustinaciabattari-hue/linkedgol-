@@ -9,6 +9,7 @@ import statsRouter from "./stats";
 import translateRouter from "./translate";
 import sitemapRouter from "./sitemap";
 import curatedOffersRouter from "./curated-offers";
+import adminMessagesRouter from "./admin-messages";
 
 const router: IRouter = Router();
 
@@ -22,5 +23,6 @@ router.use(statsRouter);
 router.use(translateRouter);
 router.use(sitemapRouter);
 router.use(curatedOffersRouter);
+router.use(adminMessagesRouter);
 
 export default router;

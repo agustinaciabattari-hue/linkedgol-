@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, curatedOffersTable } from "@workspace/db";
+import { db, curatedOffersTable, messagesTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { requireUser } from "./auth";
 import { requireAdmin } from "./admin";
@@ -43,10 +43,20 @@ router.post("/curated-offers/:id/apply", authLimiter, requireUser, async (req, r
     if (!offer || !offer.active) return res.status(404).json({ error: "Oferta no encontrada" });
 
     const sender = (req as any).authUser;
+    const finalMessage = message && message.trim() ? message : "Estoy interesado/a en esta oferta.";
+
+    await db.insert(messagesTable).values({
+      type: "curated_offer_application",
+      fromEmail: sender.email,
+      context: offer.title,
+      subject: `Postulación a "${offer.title}"`,
+      body: finalMessage,
+    });
+
     await sendCuratedOfferApplicationEmail({
       offerTitle: offer.title,
       applicantEmail: sender.email,
-      message: message && message.trim() ? message : "Estoy interesado/a en esta oferta.",
+      message: finalMessage,
     });
 
     res.json({ sent: true });

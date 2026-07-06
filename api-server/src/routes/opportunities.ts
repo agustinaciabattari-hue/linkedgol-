@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, opportunitiesTable, clubsTable } from "@workspace/db";
+import { db, opportunitiesTable, clubsTable, messagesTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { requireUser } from "./auth";
 import { sendContactRelayEmail } from "../lib/email";
@@ -109,12 +109,22 @@ router.post("/opportunities/:id/apply", authLimiter, requireUser, async (req, re
     if (!opp.email) return res.status(400).json({ error: "Esta oportunidad no tiene un email de contacto configurado" });
 
     const sender = (req as any).authUser;
+    const finalMessage = message && message.trim() ? message : "Estoy interesado/a en esta oportunidad.";
+
+    await db.insert(messagesTable).values({
+      type: "opportunity_application",
+      fromEmail: sender.email,
+      context: opp.title,
+      subject: `Postulación a "${opp.title}"`,
+      body: finalMessage,
+    });
+
     await sendContactRelayEmail({
       to: opp.email,
       fromName: sender.email,
       fromEmail: sender.email,
       subject: `Nueva postulación a "${opp.title}" desde Linkedgol`,
-      message: message && message.trim() ? message : "Estoy interesado/a en esta oportunidad.",
+      message: finalMessage,
     });
 
     res.json({ sent: true });

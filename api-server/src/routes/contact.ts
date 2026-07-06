@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { db, messagesTable } from "@workspace/db";
 import { sendContactFormEmail } from "../lib/email";
 import { forgotPasswordLimiter } from "../middlewares/rateLimit";
 
@@ -15,6 +16,16 @@ router.post("/contact", forgotPasswordLimiter, async (req, res) => {
     if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ error: "Email inválido" });
     }
+
+    // Store first — this is the durable record the admin inbox reads from,
+    // independent of whether the email itself actually gets delivered.
+    await db.insert(messagesTable).values({
+      type: "contact_form",
+      fromEmail: email,
+      fromName: name,
+      subject: `Mensaje de contacto de ${name}`,
+      body: message,
+    });
 
     await sendContactFormEmail({ name, email, message });
     res.json({ sent: true });
