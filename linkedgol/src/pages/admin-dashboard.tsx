@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { 
-  Shield, LogOut, CheckCircle2, Trash2, Users, Building2, Briefcase, Edit, X, Plus, FileText, ExternalLink
+  Shield, LogOut, CheckCircle2, Trash2, Users, Building2, Briefcase, Edit, X, Plus, FileText, ExternalLink, Sparkles
 } from "lucide-react";
 import { Button, Input, Select, Textarea, Label, Card } from "@/components/ui/shared";
 import { cn } from "@/lib/utils";
@@ -18,12 +18,14 @@ import {
   useSetClubVerified, useDeleteClub, useUpdateClub,
   useAdminCreatePlayer, useAdminCreateAgent, useAdminCreateClub,
   useListSiteContent, useUpsertSiteContent,
+  useAdminListCuratedOffers, useAdminCreateCuratedOffer, useAdminUpdateCuratedOffer, useAdminDeleteCuratedOffer,
   getAdminListPlayersQueryKey, getAdminListAgentsQueryKey, getAdminListClubsQueryKey, getListSiteContentQueryKey,
-  type AdminPlayer, type Agent, type Club
+  getAdminListCuratedOffersQueryKey,
+  type AdminPlayer, type Agent, type Club, type CuratedOffer
 } from "@workspace/api-client-react";
 import { CONTENT_PAGES, getContentValue } from "@/lib/site-content";
 
-type TabType = "jugadores" | "agentes" | "clubes" | "contenido";
+type TabType = "jugadores" | "agentes" | "clubes" | "ofertas" | "contenido";
 type EditingEntity = 
   | { type: "jugador"; data: AdminPlayer }
   | { type: "agente"; data: Agent }
@@ -112,6 +114,7 @@ export default function AdminDashboard() {
   const { data: players = [], isLoading: loadingPlayers } = useAdminListPlayers({ request: { headers: authHeaders } });
   const { data: agents = [], isLoading: loadingAgents } = useAdminListAgents({ request: { headers: authHeaders } });
   const { data: clubs = [], isLoading: loadingClubs } = useAdminListClubs({ request: { headers: authHeaders } });
+  const { data: curatedOffers = [], isLoading: loadingCuratedOffers } = useAdminListCuratedOffers({ request: { headers: authHeaders } });
   const { data: siteContent = [] } = useListSiteContent();
 
   // Mutations
@@ -131,6 +134,74 @@ export default function AdminDashboard() {
   const createClub = useAdminCreateClub({ request: { headers: authHeaders } });
 
   const upsertSiteContent = useUpsertSiteContent({ request: { headers: authHeaders } });
+
+  const createCuratedOffer = useAdminCreateCuratedOffer({ request: { headers: authHeaders } });
+  const updateCuratedOffer = useAdminUpdateCuratedOffer({ request: { headers: authHeaders } });
+  const deleteCuratedOffer = useAdminDeleteCuratedOffer({ request: { headers: authHeaders } });
+
+  // --- Curated offers (Ofertas Linkedgol) form state ---
+  const [showOfferForm, setShowOfferForm] = useState(false);
+  const [editingOfferId, setEditingOfferId] = useState<number | null>(null);
+  const offerForm = useForm({
+    defaultValues: {
+      title: "", league: "", position: "", characteristics: "", salaryApprox: "", transferValueApprox: "",
+    },
+  });
+
+  const openNewOfferForm = () => {
+    setEditingOfferId(null);
+    offerForm.reset({ title: "", league: "", position: "", characteristics: "", salaryApprox: "", transferValueApprox: "" });
+    setShowOfferForm(true);
+  };
+
+  const openEditOfferForm = (offer: CuratedOffer) => {
+    setEditingOfferId(offer.id);
+    offerForm.reset({
+      title: offer.title, league: offer.league, position: offer.position,
+      characteristics: offer.characteristics || "", salaryApprox: offer.salaryApprox || "",
+      transferValueApprox: offer.transferValueApprox || "",
+    });
+    setShowOfferForm(true);
+  };
+
+  const handleSaveOffer = (data: any) => {
+    const onSuccess = () => {
+      queryClient.invalidateQueries({ queryKey: getAdminListCuratedOffersQueryKey() });
+      setShowOfferForm(false);
+      setEditingOfferId(null);
+      toast({ title: editingOfferId ? "Oferta actualizada" : "Oferta publicada" });
+    };
+    const onError = () => toast({ title: "Error", description: "No se pudo guardar la oferta.", variant: "destructive" });
+
+    if (editingOfferId) {
+      updateCuratedOffer.mutate({ id: editingOfferId, data }, { onSuccess, onError });
+    } else {
+      createCuratedOffer.mutate({ data }, { onSuccess, onError });
+    }
+  };
+
+  const handleToggleOfferActive = (offer: CuratedOffer) => {
+    updateCuratedOffer.mutate(
+      { id: offer.id, data: { active: !offer.active } },
+      {
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: getAdminListCuratedOffersQueryKey() }),
+        onError: () => toast({ title: "Error", description: "No se pudo actualizar.", variant: "destructive" }),
+      }
+    );
+  };
+
+  const handleDeleteOffer = (id: number) => {
+    deleteCuratedOffer.mutate(
+      { id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getAdminListCuratedOffersQueryKey() });
+          toast({ title: "Oferta eliminada" });
+        },
+        onError: () => toast({ title: "Error", description: "No se pudo eliminar.", variant: "destructive" }),
+      }
+    );
+  };
 
   // Actions
   const togglePlayerVerify = async (id: number, currentStatus: boolean) => {
@@ -377,6 +448,15 @@ export default function AdminDashboard() {
                 <Building2 className="w-4 h-4 mr-2" /> Clubes ({clubs.length})
               </button>
               <button
+                onClick={() => setActiveTab("ofertas")}
+                className={cn(
+                  "flex items-center px-6 py-2.5 text-sm font-semibold rounded-lg capitalize transition-colors whitespace-nowrap", 
+                  activeTab === "ofertas" ? "bg-primary text-white shadow" : "text-slate-600 hover:bg-slate-100"
+                )}
+              >
+                <Sparkles className="w-4 h-4 mr-2" /> Ofertas Linkedgol ({curatedOffers.length})
+              </button>
+              <button
                 onClick={() => setActiveTab("contenido")}
                 className={cn(
                   "flex items-center px-6 py-2.5 text-sm font-semibold rounded-lg capitalize transition-colors whitespace-nowrap", 
@@ -397,10 +477,99 @@ export default function AdminDashboard() {
             {activeTab === "clubes" && (
               <Button onClick={() => openCreateModal("club")}><Plus className="w-4 h-4 mr-2"/> Crear nuevo</Button>
             )}
+            {activeTab === "ofertas" && !showOfferForm && (
+              <Button onClick={openNewOfferForm}><Plus className="w-4 h-4 mr-2"/> Publicar oferta</Button>
+            )}
           </div>
 
+          {/* Ofertas Linkedgol Section */}
+          {activeTab === "ofertas" && (
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+              {showOfferForm && (
+                <form
+                  onSubmit={offerForm.handleSubmit(handleSaveOffer)}
+                  className="mb-6 p-5 bg-indigo-50/50 rounded-2xl border border-indigo-100 space-y-4"
+                >
+                  <h3 className="font-bold text-slate-900">{editingOfferId ? "Editar oferta" : "Nueva oferta Linkedgol"}</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2 md:col-span-2">
+                      <Label>Título *</Label>
+                      <Input {...offerForm.register("title", { required: true })} placeholder="Ej. Delantero para club de la Süper Lig" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Liga *</Label>
+                      <Input {...offerForm.register("league", { required: true })} placeholder="Ej. Süper Lig (Turquía)" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Posición buscada *</Label>
+                      <Input {...offerForm.register("position", { required: true })} placeholder="Ej. Delantero centro" />
+                    </div>
+                    <div className="space-y-2 md:col-span-2">
+                      <Label>Características del jugador buscado</Label>
+                      <Textarea {...offerForm.register("characteristics")} placeholder="Ej. Zurdo, buen juego aéreo, entre 22-28 años..." rows={3} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Sueldo aproximado</Label>
+                      <Input {...offerForm.register("salaryApprox")} placeholder="Ej. €3.000–5.000/mes" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Posible monto de transferencia</Label>
+                      <Input {...offerForm.register("transferValueApprox")} placeholder="Ej. €150.000 aprox." />
+                    </div>
+                  </div>
+                  <div className="flex gap-2 justify-end">
+                    <Button type="button" variant="ghost" onClick={() => { setShowOfferForm(false); setEditingOfferId(null); }}>
+                      <X className="w-4 h-4 mr-1.5" /> Cancelar
+                    </Button>
+                    <Button type="submit" disabled={createCuratedOffer.isPending || updateCuratedOffer.isPending}>
+                      {(createCuratedOffer.isPending || updateCuratedOffer.isPending) ? "Guardando..." : editingOfferId ? "Guardar cambios" : "Publicar"}
+                    </Button>
+                  </div>
+                </form>
+              )}
+
+              {loadingCuratedOffers ? (
+                <div className="space-y-3">
+                  {[1, 2].map(i => <div key={i} className="h-20 bg-slate-100 animate-pulse rounded-xl" />)}
+                </div>
+              ) : curatedOffers.length > 0 ? (
+                <div className="space-y-3">
+                  {curatedOffers.map((offer) => (
+                    <div key={offer.id} className="flex items-center justify-between gap-4 p-4 border border-slate-200 rounded-xl">
+                      <div className="min-w-0 flex items-center gap-3">
+                        <span className={cn("w-2 h-2 rounded-full shrink-0", offer.active ? "bg-green-500" : "bg-slate-300")} />
+                        <div className="min-w-0">
+                          <p className="font-semibold text-slate-900 truncate">{offer.title}</p>
+                          <p className="text-sm text-slate-500 truncate">{offer.league} · {offer.position}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Button size="sm" variant="outline" onClick={() => handleToggleOfferActive(offer)}>
+                          {offer.active ? "Ocultar" : "Mostrar"}
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => openEditOfferForm(offer)}>
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-red-600 border-red-200 hover:bg-red-50"
+                          onClick={() => handleDeleteOffer(offer.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                !showOfferForm && <p className="text-slate-500 text-center py-8">Todavía no publicaste ninguna oferta Linkedgol.</p>
+              )}
+            </div>
+          )}
+
           {/* Tables Section */}
-          {activeTab !== "contenido" && (
+          {activeTab !== "contenido" && activeTab !== "ofertas" && (
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm whitespace-nowrap">
