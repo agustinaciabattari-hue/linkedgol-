@@ -5,3 +5,4 @@ export * from "./opportunities";
 export * from "./site-content";
 export * from "./users";
 export * from "./curated-offers";
+export * from "./messages";
