@@ -8,3 +8,4 @@ export * from "./admin";
 export * from "./stats";
 export * from "./translate";
 export * from "./curatedOffers";
+export * from "./adminMessages";
