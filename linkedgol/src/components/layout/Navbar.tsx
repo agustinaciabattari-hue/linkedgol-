@@ -26,6 +26,7 @@ export function Navbar() {
     { name: t("nav.agents"), path: "/agente" },
     { name: t("nav.clubs"), path: "/club" },
     { name: t("nav.opportunities"), path: "/oportunidades" },
+    { name: "Ofertas Linkedgol", path: "/ofertas-linkedgol" },
   ];
 
   const handleLogout = () => {
