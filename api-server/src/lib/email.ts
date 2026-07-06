@@ -107,3 +107,22 @@ export async function sendContactFormEmail(params: { name: string; email: string
     email,
   );
 }
+
+// Application to a Linkedgol-curated offer (not tied to any club account —
+// these listings are posted by the Linkedgol team itself), relayed to the
+// same inbox as the general contact form.
+export async function sendCuratedOfferApplicationEmail(params: {
+  offerTitle: string;
+  applicantEmail: string;
+  message: string;
+}) {
+  const { offerTitle, applicantEmail, message } = params;
+  const safeMessage = message.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  await sendEmail(
+    CONTACT_INBOX,
+    `Nueva postulación a "${offerTitle}" (Ofertas Linkedgol)`,
+    `<p><strong>${applicantEmail}</strong> se postuló a la oferta "<strong>${offerTitle}</strong>":</p><blockquote>${safeMessage.replace(/\n/g, "<br/>")}</blockquote>`,
+    `${applicantEmail} se postuló a la oferta "${offerTitle}":\n\n${message}`,
+    applicantEmail,
+  );
+}
