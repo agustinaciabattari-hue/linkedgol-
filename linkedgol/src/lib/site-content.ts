@@ -1,4 +1,4 @@
-export type ContentFieldType = "text" | "textarea" | "url" | "image" | "toggle" | "richtext";
+export type ContentFieldType = "text" | "textarea" | "url" | "image" | "toggle" | "richtext" | "module_order";
 export type ContentField = { key: string; label: string; type: ContentFieldType; default: string };
 export type ContentSection = { title: string; fields: ContentField[] };
 export type ContentPage = { id: string; name: string; route: string; sections: ContentSection[] };
@@ -97,6 +97,14 @@ export const CONTENT_PAGES: ContentPage[] = [
         { key: "home_hero_title", label: "Título principal", type: "textarea", default: "Conectando el talento con oportunidades en el fútbol" },
         { key: "home_hero_subtitle", label: "Subtítulo", type: "textarea", default: "Linkedgol es la plataforma definitiva donde jugadores, agentes y clubes descubren, negocian y construyen el futuro del deporte." },
         { key: "home_hero_image", label: "Imagen de fondo (URL)", type: "image", default: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=1920&h=1080&fit=crop" },
+      ]},
+      { title: "Módulos de la página (orden y visibilidad)", fields: [
+        { key: "home_modules_config", label: "Secciones debajo del Hero", type: "module_order", default: JSON.stringify([
+          { id: "featured_profiles", visible: true },
+          { id: "oportunidades", visible: true },
+          { id: "ofertas_linkedgol", visible: true },
+          { id: "how_it_works", visible: true },
+        ]) },
       ]},
       { title: "Estadísticas", fields: [
         { key: "home_stats_show", label: "Mostrar contadores de estadísticas", type: "toggle", default: "true" },
@@ -218,6 +226,31 @@ export const CONTENT_PAGES: ContentPage[] = [
     ],
   },
 ];
+
+export type ModuleConfigItem = { id: string; visible: boolean };
+
+export const HOME_MODULE_LABELS: Record<string, string> = {
+  featured_profiles: "Perfiles Destacados",
+  oportunidades: "Oportunidades Activas",
+  ofertas_linkedgol: "Ofertas Linkedgol",
+  how_it_works: "Cómo Funciona",
+};
+
+export function getModuleOrder(
+  items: { key: string; value: string }[] | undefined,
+  key: string,
+  fallback: ModuleConfigItem[]
+): ModuleConfigItem[] {
+  const found = items?.find(i => i.key === key);
+  if (!found || !found.value) return fallback;
+  try {
+    const parsed = JSON.parse(found.value);
+    if (Array.isArray(parsed)) return parsed;
+    return fallback;
+  } catch {
+    return fallback;
+  }
+}
 
 export function getContentValue(items: { key: string; value: string }[] | undefined, key: string, fallback: string): string {
   const found = items?.find(i => i.key === key);
