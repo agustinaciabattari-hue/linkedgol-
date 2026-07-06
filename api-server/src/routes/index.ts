@@ -8,6 +8,7 @@ import contactRouter from "./contact";
 import statsRouter from "./stats";
 import translateRouter from "./translate";
 import sitemapRouter from "./sitemap";
+import curatedOffersRouter from "./curated-offers";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(contactRouter);
 router.use(statsRouter);
 router.use(translateRouter);
 router.use(sitemapRouter);
+router.use(curatedOffersRouter);
 
 export default router;

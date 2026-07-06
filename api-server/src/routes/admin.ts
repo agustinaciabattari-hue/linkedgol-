@@ -10,7 +10,7 @@ const router: IRouter = Router();
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
 
-function requireAdmin(req: Request, res: Response, next: NextFunction) {
+export function requireAdmin(req: Request, res: Response, next: NextFunction) {
   const auth = req.headers.authorization || "";
   const token = auth.replace(/^Bearer\s+/i, "").trim();
   if (!token) return res.status(401).json({ error: "No autorizado" });
