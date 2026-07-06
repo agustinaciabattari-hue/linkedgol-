@@ -24,7 +24,7 @@ import {
   getAdminListCuratedOffersQueryKey, getAdminListMessagesQueryKey,
   type AdminPlayer, type Agent, type Club, type CuratedOffer, type AdminMessage
 } from "@workspace/api-client-react";
-import { CONTENT_PAGES, getContentValue } from "@/lib/site-content";
+import { CONTENT_PAGES, getContentValue, HOME_MODULE_LABELS, type ModuleConfigItem } from "@/lib/site-content";
 
 type TabType = "jugadores" | "agentes" | "clubes" | "ofertas" | "mensajes" | "contenido";
 type EditingEntity = 
@@ -1094,6 +1094,93 @@ export default function AdminDashboard() {
                                   onChange={(e) => setContentValues(prev => ({...prev, [field.key]: e.target.value}))}
                                   className="max-w-3xl h-96 font-mono text-sm"
                                 />
+                              ) : field.type === "module_order" ? (
+                                (() => {
+                                  let moduleList: ModuleConfigItem[] = [];
+                                  try {
+                                    moduleList = JSON.parse(currentVal);
+                                    if (!Array.isArray(moduleList)) moduleList = [];
+                                  } catch {
+                                    moduleList = [];
+                                  }
+
+                                  const updateModules = (next: ModuleConfigItem[]) => {
+                                    setContentValues(prev => ({ ...prev, [field.key]: JSON.stringify(next) }));
+                                  };
+
+                                  const moveModule = (index: number, direction: -1 | 1) => {
+                                    const next = [...moduleList];
+                                    const targetIndex = index + direction;
+                                    if (targetIndex < 0 || targetIndex >= next.length) return;
+                                    [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
+                                    updateModules(next);
+                                  };
+
+                                  const toggleModule = (index: number) => {
+                                    const next = [...moduleList];
+                                    next[index] = { ...next[index], visible: !next[index].visible };
+                                    updateModules(next);
+                                  };
+
+                                  return (
+                                    <div className="max-w-xl space-y-2">
+                                      {moduleList.map((mod, index) => (
+                                        <div
+                                          key={mod.id}
+                                          className={cn(
+                                            "flex items-center justify-between gap-3 p-3 rounded-xl border",
+                                            mod.visible ? "bg-white border-slate-200" : "bg-slate-50 border-slate-200 opacity-60"
+                                          )}
+                                        >
+                                          <div className="flex items-center gap-3">
+                                            <span className="text-xs font-mono text-slate-400 w-5">{index + 1}</span>
+                                            <span className="font-medium text-slate-800 text-sm">
+                                              {HOME_MODULE_LABELS[mod.id] || mod.id}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-1.5">
+                                            <button
+                                              type="button"
+                                              onClick={() => moveModule(index, -1)}
+                                              disabled={index === 0}
+                                              className="w-7 h-7 flex items-center justify-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                                              title="Subir"
+                                            >
+                                              ↑
+                                            </button>
+                                            <button
+                                              type="button"
+                                              onClick={() => moveModule(index, 1)}
+                                              disabled={index === moduleList.length - 1}
+                                              className="w-7 h-7 flex items-center justify-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                                              title="Bajar"
+                                            >
+                                              ↓
+                                            </button>
+                                            <button
+                                              type="button"
+                                              role="switch"
+                                              aria-checked={mod.visible}
+                                              onClick={() => toggleModule(index)}
+                                              className={cn(
+                                                "relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0 ml-2",
+                                                mod.visible ? "bg-primary" : "bg-slate-300"
+                                              )}
+                                            >
+                                              <span className={cn(
+                                                "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                                                mod.visible ? "translate-x-6" : "translate-x-1"
+                                              )} />
+                                            </button>
+                                          </div>
+                                        </div>
+                                      ))}
+                                      <p className="text-xs text-slate-400 pt-1">
+                                        Usá las flechas para reordenar y el interruptor para mostrar/ocultar cada sección en la Home.
+                                      </p>
+                                    </div>
+                                  );
+                                })()
                               ) : field.type === "image" ? (
                                 <div className="flex items-start gap-4">
                                   <div className="w-16 h-16 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
