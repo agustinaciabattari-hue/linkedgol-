@@ -19,6 +19,7 @@ const Home = lazy(() => import("@/pages/home"));
 const Profiles = lazy(() => import("@/pages/profiles"));
 const PlayerProfile = lazy(() => import("@/pages/player-profile"));
 const Opportunities = lazy(() => import("@/pages/opportunities"));
+const OfertasLinkedgol = lazy(() => import("@/pages/ofertas-linkedgol"));
 const LandingJugador = lazy(() => import("@/pages/jugador"));
 const LandingAgente = lazy(() => import("@/pages/agente"));
 const LandingClub = lazy(() => import("@/pages/club"));
@@ -73,6 +74,7 @@ function Router() {
             <Route path="/perfiles" component={Profiles} />
             <Route path="/perfil/:id" component={PlayerProfile} />
             <Route path="/oportunidades" component={Opportunities} />
+            <Route path="/ofertas-linkedgol" component={OfertasLinkedgol} />
             
             <Route path="/jugador" component={LandingJugador} />
             <Route path="/agente" component={LandingAgente} />
