@@ -126,3 +126,11 @@ export async function sendCuratedOfferApplicationEmail(params: {
     applicantEmail,
   );
 }
+
+// Generic send used by the admin's message inbox — both for replying to a
+// stored message and for composing a brand-new outbound email.
+export async function sendAdminEmail(params: { to: string; subject: string; body: string }) {
+  const { to, subject, body } = params;
+  const safeBody = body.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  await sendEmail(to, subject, `<p>${safeBody.replace(/\n/g, "<br/>")}</p>`, body, CONTACT_INBOX);
+}
