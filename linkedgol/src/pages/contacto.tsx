@@ -5,9 +5,13 @@ import { Button, Card, Input, Label, Textarea } from "@/components/ui/shared";
 import { useSendContactMessage } from "@workspace/api-client-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { SEO } from "@/components/SEO";
+import { useListSiteContent } from "@workspace/api-client-react";
+import { getContentValue } from "@/lib/site-content";
 
 export default function Contacto() {
   const { t } = useLanguage();
+  const { data: content } = useListSiteContent();
+  const c = (key: string, fallback: string) => getContentValue(content, key, fallback);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -36,9 +40,9 @@ export default function Contacto() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-primary mb-4 shadow-sm">
             <MessageCircle className="w-8 h-8" />
           </div>
-          <h1 className="text-4xl font-display font-bold text-slate-900 mb-3">{t("contacto.title")}</h1>
+          <h1 className="text-4xl font-display font-bold text-slate-900 mb-3">{c("contacto_hero_title", t("contacto.title"))}</h1>
           <p className="text-lg text-slate-600">
-            {t("contacto.subtitle")}
+            {c("contacto_hero_subtitle", t("contacto.subtitle"))}
           </p>
         </div>
 

@@ -8,9 +8,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { TranslateToggle } from "@/components/TranslateToggle";
 import { SEO } from "@/components/SEO";
+import { useListSiteContent } from "@workspace/api-client-react";
+import { getContentValue } from "@/lib/site-content";
 
 export default function Opportunities() {
   const { data: opportunities, isLoading } = useListOpportunities();
+  const { data: content } = useListSiteContent();
+  const c = (key: string, fallback: string) => getContentValue(content, key, fallback);
   const { isLoggedIn, token } = useAuth();
   const { toast } = useToast();
 
@@ -51,10 +55,10 @@ export default function Opportunities() {
         <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6 bg-blue-900 rounded-3xl p-8 md:p-10 shadow-xl overflow-hidden relative">
           <div className="absolute right-0 top-0 w-1/2 h-full opacity-10 bg-[url('https://images.unsplash.com/photo-1459865264687-595d652de67e?w=800&fit=crop')] bg-cover bg-center mix-blend-overlay"></div>
           <div className="relative z-10 text-white">
-            <Badge className="bg-blue-500/30 text-blue-100 hover:bg-blue-500/40 border-none mb-4">Mercado de Pases</Badge>
-            <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">Oportunidades Activas</h1>
+            <Badge className="bg-blue-500/30 text-blue-100 hover:bg-blue-500/40 border-none mb-4">{c("oportunidades_hero_badge", "Mercado de Pases")}</Badge>
+            <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">{c("oportunidades_hero_title", "Oportunidades Activas")}</h1>
             <p className="text-blue-100 max-w-xl text-lg">
-              Descubrí qué posiciones están buscando los clubes y postulá directamente si tu perfil coincide.
+              {c("oportunidades_hero_subtitle", "Descubrí qué posiciones están buscando los clubes y postulá directamente si tu perfil coincide.")}
             </p>
           </div>
           <div className="relative z-10 shrink-0">

@@ -6,9 +6,13 @@ import { Button, Card, Badge, Input, Select, Label } from "@/components/ui/share
 import { useListPlayers } from "@workspace/api-client-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { SEO } from "@/components/SEO";
+import { useListSiteContent } from "@workspace/api-client-react";
+import { getContentValue } from "@/lib/site-content";
 
 export default function Profiles() {
   const { t } = useLanguage();
+  const { data: content } = useListSiteContent();
+  const c = (key: string, fallback: string) => getContentValue(content, key, fallback);
   const [filters, setFilters] = useState({
     position: "",
     nationality: "",
@@ -33,8 +37,8 @@ export default function Profiles() {
         
         <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <h1 className="text-4xl font-display font-bold text-foreground mb-3">{t("profiles.title")}</h1>
-            <p className="text-lg text-muted-foreground">{t("profiles.subtitle")}</p>
+            <h1 className="text-4xl font-display font-bold text-foreground mb-3">{c("perfiles_hero_title", t("profiles.title"))}</h1>
+            <p className="text-lg text-muted-foreground">{c("perfiles_hero_subtitle", t("profiles.subtitle"))}</p>
           </div>
           <Link href="/registro/jugador">
             <Button className="shrink-0"><UserPlus className="w-4 h-4 mr-2" /> {t("profiles.createProfile")}</Button>

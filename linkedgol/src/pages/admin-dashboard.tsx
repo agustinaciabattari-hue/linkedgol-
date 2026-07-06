@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { 
-  Shield, LogOut, CheckCircle2, Trash2, Users, Building2, Briefcase, Edit, X, Plus, FileText, ExternalLink, Sparkles
+  Shield, LogOut, CheckCircle2, Trash2, Users, Building2, Briefcase, Edit, X, Plus, FileText, ExternalLink, Sparkles, Mail, Send, Inbox
 } from "lucide-react";
 import { Button, Input, Select, Textarea, Label, Card } from "@/components/ui/shared";
 import { cn } from "@/lib/utils";
@@ -19,13 +19,14 @@ import {
   useAdminCreatePlayer, useAdminCreateAgent, useAdminCreateClub,
   useListSiteContent, useUpsertSiteContent,
   useAdminListCuratedOffers, useAdminCreateCuratedOffer, useAdminUpdateCuratedOffer, useAdminDeleteCuratedOffer,
+  useAdminListMessages, useAdminMarkMessageRead, useAdminReplyToMessage, useAdminDeleteMessage, useAdminSendEmail,
   getAdminListPlayersQueryKey, getAdminListAgentsQueryKey, getAdminListClubsQueryKey, getListSiteContentQueryKey,
-  getAdminListCuratedOffersQueryKey,
-  type AdminPlayer, type Agent, type Club, type CuratedOffer
+  getAdminListCuratedOffersQueryKey, getAdminListMessagesQueryKey,
+  type AdminPlayer, type Agent, type Club, type CuratedOffer, type AdminMessage
 } from "@workspace/api-client-react";
 import { CONTENT_PAGES, getContentValue } from "@/lib/site-content";
 
-type TabType = "jugadores" | "agentes" | "clubes" | "ofertas" | "contenido";
+type TabType = "jugadores" | "agentes" | "clubes" | "ofertas" | "mensajes" | "contenido";
 type EditingEntity = 
   | { type: "jugador"; data: AdminPlayer }
   | { type: "agente"; data: Agent }
@@ -115,6 +116,7 @@ export default function AdminDashboard() {
   const { data: agents = [], isLoading: loadingAgents } = useAdminListAgents({ request: { headers: authHeaders } });
   const { data: clubs = [], isLoading: loadingClubs } = useAdminListClubs({ request: { headers: authHeaders } });
   const { data: curatedOffers = [], isLoading: loadingCuratedOffers } = useAdminListCuratedOffers({ request: { headers: authHeaders } });
+  const { data: messages = [], isLoading: loadingMessages } = useAdminListMessages({ request: { headers: authHeaders } });
   const { data: siteContent = [] } = useListSiteContent();
 
   // Mutations
@@ -199,6 +201,82 @@ export default function AdminDashboard() {
           toast({ title: "Oferta eliminada" });
         },
         onError: () => toast({ title: "Error", description: "No se pudo eliminar.", variant: "destructive" }),
+      }
+    );
+  };
+
+  // --- Mensajes (bandeja del admin) ---
+  const markMessageRead = useAdminMarkMessageRead({ request: { headers: authHeaders } });
+  const replyToMessage = useAdminReplyToMessage({ request: { headers: authHeaders } });
+  const deleteMessage = useAdminDeleteMessage({ request: { headers: authHeaders } });
+  const sendAdminEmail = useAdminSendEmail({ request: { headers: authHeaders } });
+
+  const [selectedMessageId, setSelectedMessageId] = useState<number | null>(null);
+  const [replyText, setReplyText] = useState("");
+  const [showCompose, setShowCompose] = useState(false);
+  const [composeForm, setComposeForm] = useState({ to: "", subject: "", body: "" });
+
+  const messageTypeLabels: Record<string, string> = {
+    contact_form: "Formulario de Contacto",
+    curated_offer_application: "Postulación · Oferta Linkedgol",
+    player_contact: "Contacto a Jugador",
+    opportunity_application: "Postulación · Oportunidad",
+  };
+
+  const selectedMessage = messages.find(m => m.id === selectedMessageId) || null;
+  const unreadCount = messages.filter(m => !m.read).length;
+
+  const openMessage = (msg: AdminMessage) => {
+    setSelectedMessageId(msg.id);
+    setReplyText("");
+    if (!msg.read) {
+      markMessageRead.mutate(
+        { id: msg.id, data: { read: true } },
+        { onSuccess: () => queryClient.invalidateQueries({ queryKey: getAdminListMessagesQueryKey() }) }
+      );
+    }
+  };
+
+  const handleSendReply = () => {
+    if (!selectedMessageId || !replyText.trim()) return;
+    replyToMessage.mutate(
+      { id: selectedMessageId, data: { body: replyText } },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getAdminListMessagesQueryKey() });
+          setReplyText("");
+          toast({ title: "Respuesta enviada" });
+        },
+        onError: () => toast({ title: "Error", description: "No se pudo enviar la respuesta.", variant: "destructive" }),
+      }
+    );
+  };
+
+  const handleDeleteMessage = (id: number) => {
+    deleteMessage.mutate(
+      { id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getAdminListMessagesQueryKey() });
+          if (selectedMessageId === id) setSelectedMessageId(null);
+          toast({ title: "Mensaje eliminado" });
+        },
+        onError: () => toast({ title: "Error", description: "No se pudo eliminar.", variant: "destructive" }),
+      }
+    );
+  };
+
+  const handleSendCompose = () => {
+    if (!composeForm.to.trim() || !composeForm.subject.trim() || !composeForm.body.trim()) return;
+    sendAdminEmail.mutate(
+      { data: composeForm },
+      {
+        onSuccess: () => {
+          setShowCompose(false);
+          setComposeForm({ to: "", subject: "", body: "" });
+          toast({ title: "Email enviado" });
+        },
+        onError: () => toast({ title: "Error", description: "No se pudo enviar el email.", variant: "destructive" }),
       }
     );
   };
@@ -457,6 +535,18 @@ export default function AdminDashboard() {
                 <Sparkles className="w-4 h-4 mr-2" /> Ofertas Linkedgol ({curatedOffers.length})
               </button>
               <button
+                onClick={() => setActiveTab("mensajes")}
+                className={cn(
+                  "flex items-center px-6 py-2.5 text-sm font-semibold rounded-lg capitalize transition-colors whitespace-nowrap relative", 
+                  activeTab === "mensajes" ? "bg-primary text-white shadow" : "text-slate-600 hover:bg-slate-100"
+                )}
+              >
+                <Inbox className="w-4 h-4 mr-2" /> Mensajes ({messages.length})
+                {unreadCount > 0 && (
+                  <span className="ml-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{unreadCount}</span>
+                )}
+              </button>
+              <button
                 onClick={() => setActiveTab("contenido")}
                 className={cn(
                   "flex items-center px-6 py-2.5 text-sm font-semibold rounded-lg capitalize transition-colors whitespace-nowrap", 
@@ -479,6 +569,9 @@ export default function AdminDashboard() {
             )}
             {activeTab === "ofertas" && !showOfferForm && (
               <Button onClick={openNewOfferForm}><Plus className="w-4 h-4 mr-2"/> Publicar oferta</Button>
+            )}
+            {activeTab === "mensajes" && !showCompose && (
+              <Button onClick={() => setShowCompose(true)}><Send className="w-4 h-4 mr-2"/> Redactar nuevo</Button>
             )}
           </div>
 
@@ -568,8 +661,148 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {/* Mensajes Section */}
+          {activeTab === "mensajes" && (
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+              {showCompose && (
+                <div className="mb-6 p-5 bg-blue-50/50 rounded-2xl border border-blue-100 space-y-4">
+                  <h3 className="font-bold text-slate-900">Redactar nuevo email</h3>
+                  <div className="space-y-2">
+                    <Label>Para *</Label>
+                    <Input
+                      value={composeForm.to}
+                      onChange={(e) => setComposeForm(prev => ({ ...prev, to: e.target.value }))}
+                      placeholder="destinatario@email.com"
+                      type="email"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Asunto *</Label>
+                    <Input
+                      value={composeForm.subject}
+                      onChange={(e) => setComposeForm(prev => ({ ...prev, subject: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Mensaje *</Label>
+                    <Textarea
+                      value={composeForm.body}
+                      onChange={(e) => setComposeForm(prev => ({ ...prev, body: e.target.value }))}
+                      rows={5}
+                    />
+                  </div>
+                  <div className="flex gap-2 justify-end">
+                    <Button type="button" variant="ghost" onClick={() => { setShowCompose(false); setComposeForm({ to: "", subject: "", body: "" }); }}>
+                      <X className="w-4 h-4 mr-1.5" /> Cancelar
+                    </Button>
+                    <Button onClick={handleSendCompose} disabled={sendAdminEmail.isPending}>
+                      {sendAdminEmail.isPending ? "Enviando..." : <><Send className="w-4 h-4 mr-1.5" /> Enviar</>}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {loadingMessages ? (
+                <div className="space-y-3">
+                  {[1, 2, 3].map(i => <div key={i} className="h-16 bg-slate-100 animate-pulse rounded-xl" />)}
+                </div>
+              ) : messages.length > 0 ? (
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                  {/* List */}
+                  <div className="lg:col-span-2 space-y-2 max-h-[600px] overflow-y-auto pr-1">
+                    {messages.map((msg) => (
+                      <button
+                        key={msg.id}
+                        onClick={() => openMessage(msg)}
+                        className={cn(
+                          "w-full text-left p-4 rounded-xl border transition-colors",
+                          selectedMessageId === msg.id ? "border-primary bg-primary/5" : "border-slate-200 hover:bg-slate-50",
+                          !msg.read && "bg-blue-50/40"
+                        )}
+                      >
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <span className={cn("text-xs font-bold uppercase tracking-wide", !msg.read ? "text-blue-700" : "text-slate-400")}>
+                            {messageTypeLabels[msg.type] || msg.type}
+                          </span>
+                          {!msg.read && <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />}
+                        </div>
+                        <p className="font-semibold text-slate-900 truncate text-sm">{msg.fromName ? `${msg.fromName} · ` : ""}{msg.fromEmail}</p>
+                        {msg.context && <p className="text-xs text-slate-500 truncate">{msg.context}</p>}
+                        <p className="text-xs text-slate-400 truncate mt-1">{msg.body}</p>
+                        {msg.repliedAt && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-green-700 mt-2">
+                            <CheckCircle2 className="w-3 h-3" /> Respondido
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Detail */}
+                  <div className="lg:col-span-3 border border-slate-200 rounded-xl p-5">
+                    {selectedMessage ? (
+                      <div className="space-y-4">
+                        <div className="flex items-start justify-between gap-4 border-b pb-4">
+                          <div>
+                            <span className="text-xs font-bold uppercase tracking-wide text-slate-400">
+                              {messageTypeLabels[selectedMessage.type] || selectedMessage.type}
+                            </span>
+                            <h3 className="font-bold text-lg text-slate-900">{selectedMessage.subject}</h3>
+                            <p className="text-sm text-slate-500">
+                              De: <strong>{selectedMessage.fromName ? `${selectedMessage.fromName} · ` : ""}{selectedMessage.fromEmail}</strong>
+                            </p>
+                            {selectedMessage.context && <p className="text-sm text-slate-500">Contexto: {selectedMessage.context}</p>}
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-red-600 border-red-200 hover:bg-red-50 shrink-0"
+                            onClick={() => handleDeleteMessage(selectedMessage.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+
+                        <p className="text-slate-700 whitespace-pre-line leading-relaxed">{selectedMessage.body}</p>
+
+                        {selectedMessage.replyBody && (
+                          <div className="bg-green-50 border border-green-100 rounded-xl p-4">
+                            <p className="text-xs font-bold text-green-700 uppercase tracking-wide mb-1">Tu respuesta</p>
+                            <p className="text-sm text-slate-700 whitespace-pre-line">{selectedMessage.replyBody}</p>
+                          </div>
+                        )}
+
+                        <div className="space-y-2 pt-2 border-t">
+                          <Label>Responder a {selectedMessage.fromEmail}</Label>
+                          <Textarea
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                            placeholder="Escribí tu respuesta..."
+                            rows={4}
+                          />
+                          <div className="flex justify-end">
+                            <Button onClick={handleSendReply} disabled={replyToMessage.isPending || !replyText.trim()}>
+                              {replyToMessage.isPending ? "Enviando..." : <><Send className="w-4 h-4 mr-1.5" /> Enviar respuesta</>}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="h-full flex flex-col items-center justify-center py-16 text-slate-400">
+                        <Mail className="w-10 h-10 mb-3" />
+                        <p>Elegí un mensaje de la lista para verlo</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                !showCompose && <p className="text-slate-500 text-center py-8">Todavía no recibiste ningún mensaje.</p>
+              )}
+            </div>
+          )}
+
           {/* Tables Section */}
-          {activeTab !== "contenido" && activeTab !== "ofertas" && (
+          {activeTab !== "contenido" && activeTab !== "ofertas" && activeTab !== "mensajes" && (
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm whitespace-nowrap">
@@ -855,6 +1088,12 @@ export default function AdminDashboard() {
                                   </button>
                                   <span className="text-sm text-slate-600">{currentVal === "true" ? "Visible en el sitio" : "Oculto en el sitio"}</span>
                                 </label>
+                              ) : field.type === "richtext" ? (
+                                <Textarea 
+                                  value={currentVal} 
+                                  onChange={(e) => setContentValues(prev => ({...prev, [field.key]: e.target.value}))}
+                                  className="max-w-3xl h-96 font-mono text-sm"
+                                />
                               ) : field.type === "image" ? (
                                 <div className="flex items-start gap-4">
                                   <div className="w-16 h-16 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">

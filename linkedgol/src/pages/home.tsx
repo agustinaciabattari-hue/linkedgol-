@@ -1,8 +1,8 @@
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowRight, Users, Briefcase, ShieldCheck, MapPin, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Users, Briefcase, ShieldCheck, MapPin, CheckCircle2, Sparkles } from "lucide-react";
 import { Button, Card, Badge } from "@/components/ui/shared";
-import { useListPlayers, useListOpportunities, useListSiteContent, useGetStats } from "@workspace/api-client-react";
+import { useListPlayers, useListOpportunities, useListSiteContent, useGetStats, useListCuratedOffers } from "@workspace/api-client-react";
 import { getContentValue, getContentBoolean } from "@/lib/site-content";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { SEO } from "@/components/SEO";
@@ -13,6 +13,7 @@ export default function Home() {
   const { data: opportunities, isLoading: loadingOpps } = useListOpportunities();
   const { data: content } = useListSiteContent();
   const { data: stats } = useGetStats();
+  const { data: curatedOffers } = useListCuratedOffers();
 
   const c = (key: string, fallback: string) => getContentValue(content, key, fallback);
   const showStats = getContentBoolean(content, "home_stats_show", true);
@@ -225,6 +226,39 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Ofertas Linkedgol destacadas */}
+      {curatedOffers && curatedOffers.length > 0 && (
+        <section className="py-20 bg-gradient-to-br from-indigo-900 via-indigo-800 to-purple-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+              <div className="text-white">
+                <Badge className="bg-white/15 text-indigo-100 hover:bg-white/20 border-none mb-4">
+                  <Sparkles className="w-3.5 h-3.5 mr-1.5" /> Gestionadas por Linkedgol
+                </Badge>
+                <h2 className="text-3xl font-display font-bold mb-2">Ofertas Linkedgol</h2>
+                <p className="text-indigo-100">Oportunidades que conseguimos y gestionamos directamente con clubes de todo el mundo.</p>
+              </div>
+              <Link href="/ofertas-linkedgol" className="inline-flex items-center text-white font-semibold hover:underline bg-white/10 px-4 py-2 rounded-lg shrink-0">
+                {t("home.viewAll")} <ArrowRight className="w-4 h-4 ml-1.5" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {curatedOffers.slice(0, 3).map((offer) => (
+                <Card key={offer.id} className="p-6 bg-white/95 backdrop-blur-sm border-none">
+                  <p className="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-2">{offer.league}</p>
+                  <h3 className="font-bold text-lg text-slate-900 mb-2 leading-tight">{offer.title}</h3>
+                  <p className="text-sm text-slate-500 mb-4">{offer.position}</p>
+                  <Link href="/ofertas-linkedgol">
+                    <Button size="sm" variant="outline" className="w-full">Ver detalle</Button>
+                  </Link>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* How it works simple banner */}
       <section className="py-20 bg-primary text-primary-foreground relative overflow-hidden">

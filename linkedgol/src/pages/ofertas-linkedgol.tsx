@@ -7,9 +7,13 @@ import { useListCuratedOffers, useApplyToCuratedOffer } from "@workspace/api-cli
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
+import { useListSiteContent } from "@workspace/api-client-react";
+import { getContentValue } from "@/lib/site-content";
 
 export default function OfertasLinkedgol() {
   const { data: offers, isLoading } = useListCuratedOffers();
+  const { data: content } = useListSiteContent();
+  const c = (key: string, fallback: string) => getContentValue(content, key, fallback);
   const { isLoggedIn, token } = useAuth();
   const { toast } = useToast();
 
@@ -51,11 +55,11 @@ export default function OfertasLinkedgol() {
           <div className="absolute right-0 top-0 w-1/2 h-full opacity-10 bg-[url('https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?w=800&fit=crop')] bg-cover bg-center mix-blend-overlay"></div>
           <div className="relative z-10 text-white">
             <Badge className="bg-white/15 text-indigo-100 hover:bg-white/20 border-none mb-4">
-              <Sparkles className="w-3.5 h-3.5 mr-1.5" /> Gestionadas por Linkedgol
+              <Sparkles className="w-3.5 h-3.5 mr-1.5" /> {c("ofertas_hero_badge", "Gestionadas por Linkedgol")}
             </Badge>
-            <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">Ofertas Linkedgol</h1>
+            <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">{c("ofertas_hero_title", "Ofertas Linkedgol")}</h1>
             <p className="text-indigo-100 max-w-xl text-lg">
-              Oportunidades que conseguimos y gestionamos directamente con clubes de todo el mundo. No son publicaciones de terceros — las validamos nosotros.
+              {c("ofertas_hero_subtitle", "Oportunidades que conseguimos y gestionamos directamente con clubes de todo el mundo. No son publicaciones de terceros — las validamos nosotros.")}
             </p>
           </div>
         </div>
