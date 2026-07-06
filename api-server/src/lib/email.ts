@@ -1,15 +1,19 @@
 import nodemailer from "nodemailer";
 
-// Reads standard SMTP env vars. If they aren't set, we fall back to logging
-// the email to the console — handy for local development, but you MUST
-// configure a real provider (SMTP relay, SendGrid, Resend, etc.) before
-// shipping this to production, or nobody will actually get these emails.
+// Two ways to actually send email, tried in this order:
+//   1. RESEND_API_KEY — sends via Resend's HTTP API (recommended: works
+//      through any host, since it's a normal HTTPS request, not a raw SMTP
+//      socket — many PaaS providers like Railway block outbound SMTP ports
+//      by default to prevent spam, which HTTP APIs sidestep entirely).
+//   2. SMTP_HOST/SMTP_USER/SMTP_PASS — classic SMTP relay, for providers
+//      that don't offer an HTTP API.
+// If neither is configured, emails are logged to the console instead of
+// sent — handy for local development, but you MUST configure one of the
+// two above before shipping to production.
 //
-// Required env vars for real delivery:
-//   SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, EMAIL_FROM
-// Optional:
-//   APP_URL (used to build links back to the frontend, e.g. https://linkedgol.com)
+// Optional: APP_URL (used to build links back to the frontend).
 
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const SMTP_HOST = process.env.SMTP_HOST;
 const SMTP_PORT = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587;
 const SMTP_USER = process.env.SMTP_USER;
@@ -17,9 +21,10 @@ const SMTP_PASS = process.env.SMTP_PASS;
 const EMAIL_FROM = process.env.EMAIL_FROM || "Linkedgol <no-reply@linkedgol.com>";
 const APP_URL = process.env.APP_URL || "http://localhost:5173";
 
-const isConfigured = Boolean(SMTP_HOST && SMTP_USER && SMTP_PASS);
+const useResendApi = Boolean(RESEND_API_KEY);
+const useSmtp = !useResendApi && Boolean(SMTP_HOST && SMTP_USER && SMTP_PASS);
 
-const transporter = isConfigured
+const transporter = useSmtp
   ? nodemailer.createTransport({
       host: SMTP_HOST,
       port: SMTP_PORT,
@@ -29,25 +34,48 @@ const transporter = isConfigured
   : null;
 
 async function sendEmail(to: string, subject: string, html: string, textFallback: string, replyTo?: string) {
-  if (!transporter) {
-    // Dev fallback: print the email so you can copy the link manually.
-    console.log("\n========== EMAIL (SMTP not configured, dev fallback) ==========");
-    console.log(`To: ${to}`);
-    if (replyTo) console.log(`Reply-To: ${replyTo}`);
-    console.log(`Subject: ${subject}`);
-    console.log(textFallback);
-    console.log("=================================================================\n");
+  if (useResendApi) {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: EMAIL_FROM,
+        to: [to],
+        reply_to: replyTo,
+        subject,
+        html,
+        text: textFallback,
+      }),
+    });
+    if (!res.ok) {
+      const errBody = await res.text();
+      throw new Error(`Resend API error (${res.status}): ${errBody}`);
+    }
     return;
   }
 
-  await transporter.sendMail({
-    from: EMAIL_FROM,
-    to,
-    replyTo,
-    subject,
-    html,
-    text: textFallback,
-  });
+  if (transporter) {
+    await transporter.sendMail({
+      from: EMAIL_FROM,
+      to,
+      replyTo,
+      subject,
+      html,
+      text: textFallback,
+    });
+    return;
+  }
+
+  // Dev fallback: print the email so you can copy the link manually.
+  console.log("\n========== EMAIL (no provider configured, dev fallback) ==========");
+  console.log(`To: ${to}`);
+  if (replyTo) console.log(`Reply-To: ${replyTo}`);
+  console.log(`Subject: ${subject}`);
+  console.log(textFallback);
+  console.log("====================================================================\n");
 }
 
 export async function sendVerificationEmail(to: string, token: string) {
