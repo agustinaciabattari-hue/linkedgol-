@@ -9,6 +9,7 @@ import { useAuthRegister } from "@workspace/api-client-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { SEO } from "@/components/SEO";
+import { GoogleLoginButton } from "@/components/GoogleLoginButton";
 import { trackSignUp } from "@/lib/analytics";
 
 const formSchema = z.object({
@@ -80,6 +81,22 @@ export default function RegistroClub() {
         </div>
 
         <Card className="p-6 sm:p-8 shadow-xl border-green-100/50">
+          <div className="mb-6">
+            <GoogleLoginButton
+              role="club"
+              text="signup_with"
+              onAuthenticated={(data) => {
+                trackSignUp("club");
+                login(data.token, data.user, data.profile);
+                setLocation("/mi-perfil");
+              }}
+            />
+          </div>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex-grow h-px bg-slate-200" />
+            <span className="text-xs text-slate-400 uppercase tracking-wider">o con tu email</span>
+            <div className="flex-grow h-px bg-slate-200" />
+          </div>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
             
             {/* Cuenta */}

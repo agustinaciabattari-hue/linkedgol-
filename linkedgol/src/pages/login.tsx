@@ -6,6 +6,7 @@ import { useAuthLogin } from "@workspace/api-client-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { SEO } from "@/components/SEO";
+import { GoogleLoginButton } from "@/components/GoogleLoginButton";
 import { motion } from "framer-motion";
 
 export default function Login() {
@@ -72,6 +73,22 @@ export default function Login() {
         </div>
 
         <Card className="p-8 border-slate-800 bg-slate-800/50 backdrop-blur-xl shadow-2xl mb-6">
+          <div className="mb-6">
+            <GoogleLoginButton
+              text="signin_with"
+              onAuthenticated={(data) => {
+                login(data.token, data.user, data.profile);
+                setLocation("/mi-perfil");
+              }}
+            />
+          </div>
+
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex-grow h-px bg-slate-700" />
+            <span className="text-xs text-slate-500 uppercase tracking-wider">o con tu email</span>
+            <div className="flex-grow h-px bg-slate-700" />
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label className="text-slate-300">{t("login.email")}</Label>
