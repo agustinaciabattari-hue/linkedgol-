@@ -2,6 +2,7 @@ import { Router, type IRouter, type Request, type Response, type NextFunction } 
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import { OAuth2Client } from "google-auth-library";
 import { db, usersTable, playersTable, agentsTable, clubsTable, insertPlayerSchema, insertAgentSchema, insertClubSchema } from "@workspace/db";
 import { eq, and, gt } from "drizzle-orm";
 import { authLimiter, forgotPasswordLimiter } from "../middlewares/rateLimit";
@@ -9,6 +10,9 @@ import { sendVerificationEmail, sendPasswordResetEmail } from "../lib/email";
 import { JWT_SECRET } from "../lib/jwtSecret";
 
 const router: IRouter = Router();
+
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
+const googleClient = GOOGLE_CLIENT_ID ? new OAuth2Client(GOOGLE_CLIENT_ID) : null;
 
 const SALT_ROUNDS = 10;
 const VERIFICATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24h
@@ -127,6 +131,95 @@ router.post("/auth/register", authLimiter, async (req, res) => {
   } catch (err: any) {
     console.error("Register error:", err);
     res.status(500).json({ error: "Error al registrar" });
+  }
+});
+
+// POST /auth/google — Sign in (or sign up) with a Google ID token.
+// `role` is required only the first time (creating a brand-new account);
+// an existing account is matched purely by email and logs in regardless
+// of what role was passed.
+router.post("/auth/google", authLimiter, async (req, res) => {
+  try {
+    if (!googleClient) {
+      return res.status(500).json({ error: "El login con Google no está configurado en el servidor" });
+    }
+    const { credential, role } = req.body || {};
+    if (!credential) return res.status(400).json({ error: "Falta el token de Google" });
+
+    const ticket = await googleClient.verifyIdToken({ idToken: credential, audience: GOOGLE_CLIENT_ID });
+    const payload = ticket.getPayload();
+    if (!payload?.email) return res.status(400).json({ error: "No se pudo verificar la cuenta de Google" });
+
+    const email = payload.email.toLowerCase();
+    const name = payload.name || email.split("@")[0];
+
+    const [existingUser] = await db.select().from(usersTable).where(eq(usersTable.email, email));
+
+    if (existingUser) {
+      const token = signToken(existingUser.id);
+      const profile = await getProfile(existingUser);
+      return res.json({
+        token,
+        user: { id: existingUser.id, email: existingUser.email, role: existingUser.role, playerId: existingUser.playerId, agentId: existingUser.agentId, clubId: existingUser.clubId, emailVerified: existingUser.emailVerified },
+        profile,
+      });
+    }
+
+    // Brand-new account — needs a role to know which profile table to create.
+    if (!role || !["player", "agent", "club"].includes(role)) {
+      return res.status(400).json({ error: "Elegí si te registrás como jugador, agente o club para crear tu cuenta" });
+    }
+
+    // Google already verified this email is real, so the account starts
+    // as verified — no need to send our own confirmation email.
+    // The password is a random, never-shown value; the person can set a
+    // real one later via "forgot password" if they ever want email+password login too.
+    const randomPassword = crypto.randomBytes(24).toString("hex");
+    const passwordHash = await bcrypt.hash(randomPassword, SALT_ROUNDS);
+
+    let playerId: number | null = null;
+    let agentId: number | null = null;
+    let clubId: number | null = null;
+
+    if (role === "player") {
+      const [player] = await db.insert(playersTable).values({
+        name, email, position: "Sin especificar", age: 18, nationality: "Sin especificar",
+      }).returning();
+      playerId = player.id;
+    } else if (role === "agent") {
+      const [agent] = await db.insert(agentsTable).values({
+        name, email, country: "Sin especificar",
+      }).returning();
+      agentId = agent.id;
+    } else if (role === "club") {
+      const [club] = await db.insert(clubsTable).values({
+        name, email, country: "Sin especificar",
+      }).returning();
+      clubId = club.id;
+    }
+
+    const [user] = await db.insert(usersTable).values({
+      email,
+      passwordHash,
+      role,
+      playerId,
+      agentId,
+      clubId,
+      emailVerified: true,
+    }).returning();
+
+    const token = signToken(user.id);
+    const profile = await getProfile(user);
+
+    res.status(201).json({
+      token,
+      user: { id: user.id, email: user.email, role: user.role, playerId: user.playerId, agentId: user.agentId, clubId: user.clubId, emailVerified: user.emailVerified },
+      profile,
+      newAccount: true,
+    });
+  } catch (err) {
+    console.error("Google auth error:", err);
+    res.status(500).json({ error: "Error al iniciar sesión con Google" });
   }
 });
 
