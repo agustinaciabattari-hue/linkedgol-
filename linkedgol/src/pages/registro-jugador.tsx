@@ -9,6 +9,7 @@ import { useAuthRegister } from "@workspace/api-client-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { SEO } from "@/components/SEO";
+import { trackSignUp } from "@/lib/analytics";
 
 const formSchema = z.object({
   name: z.string().min(2, "El nombre es obligatorio"),
@@ -56,6 +57,7 @@ export default function RegistroJugador() {
       data: { role: "player", ...restData } 
     }, {
       onSuccess: (res) => {
+        trackSignUp("player");
         login(res.token, res.user as any, res.profile);
         setLocation("/mi-perfil");
       },
