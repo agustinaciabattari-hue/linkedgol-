@@ -2,8 +2,8 @@ import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { CheckCircle, ArrowRight, Search, Filter, MessageCircle, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/shared";
-import { useListSiteContent } from "@workspace/api-client-react";
-import { getContentValue } from "@/lib/site-content";
+import { useListSiteContent, useGetStats } from "@workspace/api-client-react";
+import { getContentValue, getContentBoolean } from "@/lib/site-content";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { SEO } from "@/components/SEO";
 
@@ -30,6 +30,8 @@ const necesidades = [
 
 export default function LandingClub() {
   const { data: content } = useListSiteContent();
+  const { data: stats } = useGetStats();
+  const showStats = getContentBoolean(content, "home_stats_show", true);
   const c = (key: string, fallback: string) => getContentValue(content, key, fallback);
   const { t } = useLanguage();
 
@@ -74,20 +76,22 @@ export default function LandingClub() {
       </section>
 
       {/* Stats */}
-      <section className="bg-green-700 py-10 border-t border-green-600">
-        <div className="max-w-4xl mx-auto px-4 grid grid-cols-3 gap-4 text-center">
-          {[
-            { num: "1,200+", label: "Jugadores disponibles" },
-            { num: "150+", label: "Agentes activos" },
-            { num: "15+", label: "Países representados" },
-          ].map((s) => (
-            <div key={s.label}>
-              <div className="text-3xl font-black text-white">{s.num}</div>
-              <div className="text-sm text-white/70 mt-1">{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {showStats && (
+        <section className="bg-green-700 py-10 border-t border-green-600">
+          <div className="max-w-4xl mx-auto px-4 grid grid-cols-3 gap-4 text-center">
+            {[
+              { num: stats?.players ?? "–", label: "Jugadores disponibles" },
+              { num: stats?.agents ?? "–", label: "Agentes activos" },
+              { num: stats?.clubs ?? "–", label: "Clubes en la red" },
+            ].map((s) => (
+              <div key={s.label}>
+                <div className="text-3xl font-black text-white">{s.num}</div>
+                <div className="text-sm text-white/70 mt-1">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Beneficios */}
       <section className="py-20 bg-white">
