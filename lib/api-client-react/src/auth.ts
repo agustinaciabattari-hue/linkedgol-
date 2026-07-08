@@ -30,6 +30,20 @@ export function useAuthLogin(options?: {
   });
 }
 
+// --- POST /auth/google ---
+type AuthGoogleVariables = { data: { credential: string; role?: "player" | "agent" | "club" } };
+
+export function useAuthGoogle(options?: {
+  mutation?: Omit<UseMutationOptions<AuthResponse, Error, AuthGoogleVariables>, "mutationFn">;
+  request?: RequestConfig;
+}) {
+  return useMutation<AuthResponse, Error, AuthGoogleVariables>({
+    mutationFn: ({ data }) =>
+      apiFetch<AuthResponse>("/auth/google", { method: "POST", body: JSON.stringify(data) }, options?.request),
+    ...(options?.mutation || {}),
+  });
+}
+
 // --- GET /auth/me ---
 export function getAuthMeQueryKey() {
   return ["auth", "me"] as const;
