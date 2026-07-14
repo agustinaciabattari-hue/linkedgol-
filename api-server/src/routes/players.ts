@@ -43,6 +43,7 @@ router.get("/players", async (req, res) => {
       : await db.select(publicPlayerColumns).from(playersTable);
     res.json(players);
   } catch (err) {
+    console.error("GET /players error:", err);
     res.status(500).json({ error: "Error al obtener jugadores" });
   }
 });
